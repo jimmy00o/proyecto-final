@@ -1,0 +1,65 @@
+{% extends 'baseadmin.html' %}
+
+{% block title %}Lista de Productos{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+  <div class="card shadow-sm">
+    <div class="card-header bg-danger bg-opacity-25 text-center">
+      <h4 class="m-0">Lista de Producto</h4>
+    </div>
+    <div class="card-body">
+
+      <div class="table-responsive">
+        <table id="tablaProductos" class="table table-bordered table-striped align-middle">
+          <thead class="table-dark">
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Precio</th>
+              <th>Descripción</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in productos %}
+            <tr>
+              <td>{{ p.id }}</td>
+              <td>{{ p.nombre }}</td>
+              <td>{{ '%.2f'|format(p.precio) }}</td>
+              <td>{{ p.descripcion }}</td>
+              <td>
+                <!-- EDITAR -->
+                <a href="{{ url_for('editar_producto', pid=p.id) }}" 
+                   class="btn btn-sm btn-success me-1" title="Editar">
+                  <i class="bi bi-pencil-square"></i>
+                </a>
+
+                <!-- ELIMINAR -->
+                <form action="{{ url_for('eliminar_producto', pid=p.id) }}" method="post" class="d-inline"
+                      onsubmit="return confirm('¿Seguro de eliminar {{ p.nombre }}?');">
+                  <button type="submit" class="btn btn-sm btn-danger" title="Eliminar">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    new DataTable('#tablaProductos', {
+      responsive: true,
+      language: { url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json" },
+      pageLength: 5
+    });
+  });
+</script>
+{% endblock %}

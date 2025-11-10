@@ -1,0 +1,258 @@
+{% extends "baseadmin.html" %}
+{% block title %}Perfil del Administrador{% endblock %}
+
+{% block body %}
+<style>
+  /* ========== THEME “ADMIN NEON PRO” ========== */
+  :root{
+    --bg1:#0f1117;
+    --bg2:#161a22;
+    --glass:rgba(255,255,255,.06);
+    --border:rgba(255,255,255,.14);
+    --text:#e6eaf2;
+    --muted:#9aa3b2;
+    --accent:#ff7a18;     /* naranja neón */
+    --accent2:#ffb703;    /* dorado */
+    --info:#38bdf8;
+    --good:#22c55e;
+  }
+
+  /* Fondo épico con beams + grid + partículas */
+  body{
+    background:
+      radial-gradient(1200px 600px at -20% -40%, rgba(255,122,24,.25), transparent 60%),
+      radial-gradient(1000px 500px at 120% 0%, rgba(56,189,248,.25), transparent 60%),
+      linear-gradient(180deg, var(--bg1), var(--bg2));
+    color:var(--text);
+    overflow-x:hidden;
+  }
+  .admin-stage{ position:relative; isolation:isolate; }
+  /* Grid sutil */
+  .admin-stage::before{
+    content:"";
+    position:absolute; inset:0;
+    background-image:
+      linear-gradient(transparent 23px, rgba(255,255,255,.05) 24px),
+      linear-gradient(90deg, transparent 23px, rgba(255,255,255,.05) 24px);
+    background-size:24px 24px;
+    opacity:.25;
+    pointer-events:none;
+    mask-image: radial-gradient(ellipse at center, rgba(0,0,0,.9) 55%, rgba(0,0,0,0) 100%);
+    z-index:0;
+  }
+  /* Partículas incandescentes */
+  .particles{ position:absolute; inset:0; z-index:0; pointer-events:none; }
+  .spark{
+    position:absolute; width:10px; height:10px; border-radius:50%;
+    background: radial-gradient(circle, #ff7a18, #ff3c00 60%, rgba(255,60,0,0));
+    box-shadow: 0 0 18px rgba(255,120,24,1), 0 0 36px rgba(255,120,24,.6);
+    animation: float 8s ease-in-out infinite;
+    opacity:.9; filter:saturate(1.05);
+  }
+  @keyframes float{
+    0%{ transform:translate(0,0) scale(1); opacity:.7; }
+    45%{ transform:translate(70px,-110px) scale(1.3); opacity:1; }
+    100%{ transform:translate(0,0) scale(1); opacity:.8; }
+  }
+
+  /* Encabezado “glass” con borde animado */
+  .admin-header{
+    position:relative;
+    background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+    border:1px solid var(--border);
+    border-radius:18px;
+    backdrop-filter: blur(10px);
+    overflow:hidden;
+  }
+  .admin-header::after{
+    content:"";
+    position:absolute; inset:0;
+    border-radius:18px;
+    padding:1px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2), var(--info), var(--accent));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+    animation: borderRun 6s linear infinite;
+    pointer-events:none;
+  }
+  @keyframes borderRun{
+    0%{ filter:hue-rotate(0deg); }
+    100%{ filter:hue-rotate(360deg); }
+  }
+  .admin-sub{ color:var(--muted); }
+
+  /* Cinta “ADMIN” */
+  .ribbon{
+    position:absolute; top:14px; left:-8px;
+    background:linear-gradient(90deg, var(--accent), var(--accent2));
+    color:#111; font-weight:800; letter-spacing:.5px;
+    padding:.35rem .9rem; border-top-right-radius:8px; border-bottom-right-radius:8px;
+    box-shadow:0 6px 18px rgba(255,122,24,.35);
+  }
+
+  /* Tarjetas métricas con “neon border” */
+  .metric{
+    position:relative;
+    border-radius:16px;
+    padding:1.25rem;
+    color:#fff;
+    overflow:hidden;
+    border:1px solid var(--border);
+    background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+    transition:transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+  }
+  .metric:hover{ transform:translateY(-6px); box-shadow:0 18px 38px rgba(0,0,0,.45); border-color:rgba(255,255,255,.2); }
+  .metric .kpi{ font-weight:900; line-height:1; }
+  .metric .desc{ color:var(--muted); }
+  .metric .icon{
+    width:54px; height:54px; border-radius:14px; display:grid; place-items:center;
+    color:#0b1220; box-shadow: inset 0 0 14px rgba(255,255,255,.22);
+  }
+  .users-bg{ background:linear-gradient(135deg, #86efac, #22c55e); }
+  .prods-bg{ background:linear-gradient(135deg, #93c5fd, #3b82f6); }
+
+  /* Botón pill */
+  .btn-pill{
+    border-radius:999px; font-weight:700;
+    background:linear-gradient(180deg, #fff, #e9eef6);
+    border:1px solid #dce3ef; color:#0f172a;
+  }
+  .btn-pill:hover{ background:#fff; border-color:#cbd5e1; }
+
+  /* Paneles de listas con glow suave */
+  .panel{
+    background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+    border:1px solid var(--border); border-radius:16px;
+  }
+  .panel h5{ font-weight:800; letter-spacing:.2px; }
+  .list-group-item{
+    background:transparent; color:var(--text); border-color:rgba(255,255,255,.08);
+  }
+  .list-group-item:hover{ background:rgba(255,255,255,.04); }
+  .badge{
+    background:linear-gradient(135deg, var(--accent), var(--accent2));
+    color:#111827; border:none;
+  }
+  .text-muted{ color:var(--muted) !important; }
+
+  /* Entrada suave */
+  .fade-in{ animation:fadeIn .7s ease; }
+  @keyframes fadeIn{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
+
+  /* Micro-decor en métricas */
+  .soft-glow{ box-shadow: 0 0 42px rgba(255,122,24,.18); }
+</style>
+
+<div class="admin-stage">
+  <!-- Partículas -->
+  <div class="particles">
+    <span class="spark" style="top:10%; left:12%; animation-delay:.1s;"></span>
+    <span class="spark" style="top:28%; left:72%; animation-delay:1.1s;"></span>
+    <span class="spark" style="top:48%; left:42%; animation-delay:2.2s;"></span>
+    <span class="spark" style="top:78%; left:82%; animation-delay:.6s;"></span>
+    <span class="spark" style="top:62%; left:9%;  animation-delay:1.7s;"></span>
+    <span class="spark" style="top:22%; left:53%; animation-delay:.9s;"></span>
+    <span class="spark" style="top:70%; left:30%; animation-delay:2.6s;"></span>
+  </div>
+
+  <div class="container mt-4 position-relative" style="z-index:1;">
+    <!-- Encabezado -->
+    <div class="p-4 rounded-4 shadow admin-header fade-in">
+      <span class="ribbon"><i class="bi bi-shield-lock-fill me-1"></i>ADMIN</span>
+      <h2 class="text-center mb-0">
+        <i class="bi bi-lightning-charge-fill text-warning me-2"></i>
+        Perfil del Administrador
+      </h2>
+      <p class="text-center admin-sub mb-0">Bienvenido, {{ admin_nombre }}</p>
+    </div>
+
+    <!-- Métricas -->
+    <div class="row g-4 mt-3">
+      <!-- Usuarios -->
+      <div class="col-md-6">
+        <div class="metric fade-in soft-glow">
+          <div class="d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-3">
+              <div class="icon users-bg"><i class="bi bi-people-fill fs-5"></i></div>
+              <div>
+                <h4 class="mb-0">Usuarios Registrados</h4>
+                <small class="desc">Cantidad total de cuentas creadas en el sistema.</small>
+              </div>
+            </div>
+            <div class="display-5 kpi">{{ total_usuarios }}</div>
+          </div>
+          <div class="mt-3">
+            <a href="{{ url_for('lista_usuarios') }}" class="btn btn-pill">
+              <i class="bi bi-list-ul me-1"></i> Ver lista
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Productos -->
+      <div class="col-md-6">
+        <div class="metric fade-in soft-glow">
+          <div class="d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-3">
+              <div class="icon prods-bg"><i class="bi bi-box-seam fs-5"></i></div>
+              <div>
+                <h4 class="mb-0">Productos Registrados</h4>
+                <small class="desc">Cantidad total de productos agregados.</small>
+              </div>
+            </div>
+            <div class="display-5 kpi">{{ total_productos }}</div>
+          </div>
+          <div class="mt-3">
+            <a href="{{ url_for('productos_listar') }}" class="btn btn-pill">
+              <i class="bi bi-grid-3x3-gap-fill me-1"></i> Ver productos
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actividad reciente -->
+    <div class="row g-4 mt-1">
+      <!-- Últimos usuarios -->
+      <div class="col-md-6">
+        <div class="rounded-4 shadow p-3 panel fade-in">
+          <h5 class="mb-3">
+            <i class="bi bi-person-lines-fill me-2 text-warning"></i>
+            Últimos usuarios
+          </h5>
+          <ul class="list-group">
+            {% for u in ult_usuarios %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span><i class="bi bi-person-circle me-2 text-warning"></i>{{ u.nombre }} <small class="text-muted">({{ u.email }})</small></span>
+              <span class="badge">#{{ u.id }}</span>
+            </li>
+            {% else %}
+            <li class="list-group-item">No hay usuarios aún</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+
+      <!-- Últimos productos -->
+      <div class="col-md-6">
+        <div class="rounded-4 shadow p-3 panel fade-in">
+          <h5 class="mb-3">
+            <i class="bi bi-bag-check-fill me-2 text-warning"></i>
+            Últimos productos
+          </h5>
+          <ul class="list-group">
+            {% for p in ult_productos %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span><i class="bi bi-tag-fill me-2 text-warning"></i>{{ p.nombre }}</span>
+              <span class="badge">{{ p.precio }}</span>
+            </li>
+            {% else %}
+            <li class="list-group-item">No hay productos aún</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

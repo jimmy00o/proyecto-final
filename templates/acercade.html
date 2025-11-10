@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Acerca de{% endblock %}
+
+{% block contenido %}
+
+<!-- Encabezado con imagen -->
+<div class="container mt-5">
+  <div class="text-center">
+    <img src="{{ url_for('static', filename='logo-moto-vintage-dibujado-mano_23-2149432259.jpg') }}" 
+         class="img-fluid rounded shadow-sm mb-4" 
+         alt="MotoForce - Pasión por las motocicletas" 
+         style="max-height: 150px; object-fit: cover;">
+  </div>
+  <h2 class="text-center mb-4">ACERCA DE MotoForce</h2>
+  <p class="text-center">
+    En <strong>MotoForce</strong> la potencia y la libertad se encuentran. Descubre la exclusividad de marcas como
+    <strong>Ducati</strong>, <strong>Harley-Davidson</strong> y
+    <strong>BMW Motorrad</strong>, con la asesoría, confianza y pasión que solo nosotros podemos ofrecer.
+  </p>
+</div>
+
+<!-- Misión, Visión, Objetivo -->
+<div class="container mt-5">
+  <div class="row text-center">
+    <div class="col-sm-4">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Misión</h5>
+          <p class="card-text">
+            Ofrecer a los amantes de las motocicletas modelos de las marcas más prestigiosas del mundo, 
+            <strong>como Ducati, Harley-Davidson y BMW</strong>, 
+            combinando calidad, innovación y atención profesional, 
+            para convertir cada moto en un símbolo de libertad y estilo.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-4">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Visión</h5>
+          <p class="card-text">
+            Consolidarnos como la distribuidora de motocicletas de referencia en la región, 
+            reconocida por la <strong>excelencia en el servicio</strong>, 
+            la autenticidad de nuestras motos y la capacidad de crear relaciones duraderas con clientes que valoran la velocidad, 
+            la aventura y el prestigio.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-4">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Objetivo</h5>
+          <p class="card-text">
+            Brindar a nuestros clientes <strong>motocicletas de alto rendimiento</strong>, 
+            auténticas y exclusivas, ofreciendo asesoría personalizada y un servicio de confianza 
+            que garantice una experiencia única en cada compra y en cada ruta.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Valores -->
+<div class="container mt-5">
+  <h2 class="text-center mb-4">Lo que nos define</h2>
+  <div class="row text-center">
+    <div class="col-sm-3">
+      <div class="card shadow-sm">
+        <img src="{{ url_for('static', filename='autenticidad.jpg') }}" class="card-img-top" alt="Autenticidad">
+        <div class="card-body">
+          <h5 class="card-title">Autenticidad</h5>
+          <p class="card-text">Garantizamos motocicletas 100% originales con respaldo oficial de fábrica, ofreciendo seguridad y confianza en cada adquisición.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-3">
+      <div class="card shadow-sm">
+        <img src="{{ url_for('static', filename='confianza.jpg') }}" class="card-img-top" alt="Confianza">
+        <div class="card-body">
+          <h5 class="card-title">Confianza</h5>
+          <p class="card-text">Brindamos transparencia en todo el proceso de compra, asegurando respaldo técnico y tranquilidad en cada elección.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-3">
+      <div class="card shadow-sm">
+        <img src="{{ url_for('static', filename='exclusividad.jpg') }}" class="card-img-top" alt="Exclusividad">
+        <div class="card-body">
+          <h5 class="card-title">Exclusividad</h5>
+          <p class="card-text">Ofrecemos modelos únicos que reflejan potencia, elegancia y distinción, pensados para marcar la diferencia en cada ruta.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-3">
+      <div class="card shadow-sm">
+        <img src="{{ url_for('static', filename='exelencia.jpg') }}" class="card-img-top" alt="Excelencia en el servicio">
+        <div class="card-body">
+          <h5 class="card-title">Excelencia en el servicio</h5>
+          <p class="card-text">Atendemos con dedicación y asesoría personalizada, superando expectativas en cada experiencia sobre dos ruedas.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

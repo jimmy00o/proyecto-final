@@ -1,0 +1,63 @@
+{% extends 'baseadmin.html' %}
+{% block title %}Editar producto{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+  <div class="card shadow-sm">
+    <div class="card-header bg-danger bg-opacity-25">
+      <h5 class="m-0">Editar producto</h5>
+    </div>
+    <div class="card-body">
+      <form method="post" action="{{ url_for('editar_producto', pid=producto.id) }}">
+
+        <div class="mb-3">
+          <label class="form-label" data-bs-toggle="tooltip" title="Nombre del producto tal como se mostrará al cliente.">Nombre</label>
+          <input type="text" name="nombre" class="form-control" required value="{{ producto.nombre }}" data-bs-toggle="tooltip" title="Escribe el nombre del producto.">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" data-bs-toggle="tooltip" title="Precio unitario del producto.">Precio</label>
+          <input type="number" step="0.01" name="precio" class="form-control" required value="{{ producto.precio }}" data-bs-toggle="tooltip" title="Ingresa un precio válido.">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" data-bs-toggle="tooltip" title="Describe brevemente el producto para el catálogo.">Descripción</label>
+          <textarea name="descripcion" rows="3" class="form-control" data-bs-toggle="tooltip" title="Puedes incluir características, modelo, detalles, etc.">{{ producto.descripcion }}</textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary" data-bs-toggle="tooltip" title="Guardar los cambios realizados al producto.">Guardar cambios</button>
+        <a href="{{ url_for('productos_listar') }}" class="btn btn-secondary" data-bs-toggle="tooltip" title="Volver a la lista sin guardar.">Cancelar</a>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ✅ Script para asegurar que solo un tooltip se muestre -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+  const tooltipEls = Array.from(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+  const tooltipInstances = tooltipEls.map(el => new bootstrap.Tooltip(el));
+
+  document.addEventListener('shown.bs.tooltip', function (e) {
+    tooltipInstances.forEach(t => {
+      if (t._element !== e.target) t.hide();
+    });
+  });
+
+  tooltipEls.forEach((el) => {
+    el.addEventListener('mouseenter', () => {
+      tooltipInstances.forEach(t => {
+        if (t._element !== el) t.hide();
+      });
+    });
+    el.addEventListener('mouseleave', () => {
+      const inst = bootstrap.Tooltip.getInstance(el);
+      if (inst) inst.hide();
+    });
+  });
+
+});
+</script>
+{% endblock %}

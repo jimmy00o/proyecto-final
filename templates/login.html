@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+
+{% block titulo %} LOGIN {% endblock %}
+
+{% block contenido %}
+<!-- Mostrar mensajes flash -->
+{% with msg = get_flashed_messages(with_categories=True) %}
+  {% if msg %}
+    {% for category, message in msg %}
+      <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        <strong>{{ message }}</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<div class="container-fluid vh-100 login-bg d-flex justify-content-center align-items-center">
+  <div class="card login-card shadow-lg border-0">
+    <div class="row g-0">
+
+      <!-- Panel izquierdo -->
+      <div class="col-md-6 d-none d-md-flex align-items-center justify-content-center bg-moto-left text-white p-5 flex-column">
+        <img src="{{ url_for('static', filename='inicio.png') }}" alt="Imagen Panel"
+             class="img-fluid mb-4" style="width: 220px; height: 220px; object-fit: contain;">
+        <h2 class="fw-bold mb-3 text-center text-light text-uppercase">¡Bienvenido a Motoforce!</h2>
+        <p class="text-center mb-4 text-light">La potencia y velocidad también están en tu cuenta.  
+        ¿Aún no tienes una? Regístrate y arranca con nosotros.</p>
+        <a href="{{ url_for('registro') }}" class="btn btn-lg btn-register text-uppercase fw-bold px-4 py-2"
+           data-bs-toggle="tooltip" data-bs-placement="top" title="Haz clic aquí para crear tu cuenta nueva">
+          Registrarse
+        </a>
+      </div>
+
+      <!-- Panel derecho -->
+      <div class="col-md-6 bg-dark text-light d-flex align-items-center">
+        <div class="card-body p-5 w-100">
+
+          <h2 class="fw-bold mb-4 text-center text-uppercase text-warning">Iniciar Sesión</h2>
+
+          <!-- Botón de Google -->
+          <div class="d-grid mb-4">
+            <button class="btn btn-lg d-flex align-items-center justify-content-center btn-google" type="button"
+                    data-bs-toggle="tooltip" data-bs-placement="bottom" title="Inicia sesión rápidamente con tu cuenta de Google">
+              <img src="{{ url_for('static', filename='googleicon.png') }}" alt="Google"
+                   style="width: 22px; height: 22px; margin-right: 10px;">
+              Iniciar sesión con Google
+            </button>
+          </div>
+
+          <!-- Separador -->
+          <div class="text-center my-3">
+            <span class="separator">O usa tu cuenta Motoforce</span>
+          </div>
+
+          <!-- Formulario -->
+          <form action="{{ url_for('accesologin') }}" method="POST" class="needs-validation" novalidate>
+            <div class="form-outline mb-4">
+              <input name="email" type="email" id="email" class="form-control form-control-lg custom-input"
+                     placeholder="Correo electrónico" required
+                     data-bs-toggle="tooltip" data-bs-placement="right" title="Introduce tu correo electrónico registrado" />
+            </div>
+            <div class="form-outline mb-4">
+              <input name="password" type="password" id="password" class="form-control form-control-lg custom-input"
+                     placeholder="Contraseña" required
+                     data-bs-toggle="tooltip" data-bs-placement="right" title="Escribe tu contraseña para acceder" />
+            </div>
+
+            <!-- Botón Iniciar Sesión -->
+            <div class="d-grid">
+              <button class="btn btn-lg btn-login text-uppercase fw-bold" type="submit"
+                      data-bs-toggle="tooltip" data-bs-placement="bottom" title="Haz clic para iniciar sesión en tu cuenta">
+                Iniciar Sesión
+              </button>
+            </div>
+          </form>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<style>
+/* Fondo general con textura metálica */
+.login-bg {
+  background: radial-gradient(circle at top, #1a1a1a 0%, #0d0d0d 100%);
+  background-image: url('{{ url_for("static", filename="fondo_moto.jpg") }}');
+  background-size: cover;
+  background-position: center;
+  background-blend-mode: overlay;
+}
+
+/* Tarjeta principal */
+.login-card {
+  width: 90%;
+  max-width: 1000px;
+  border-radius: 1rem;
+  overflow: hidden;
+  backdrop-filter: blur(5px);
+}
+
+/* Panel izquierdo con efecto metálico */
+.bg-moto-left {
+  background: linear-gradient(135deg, #202020, #383838);
+  box-shadow: inset 0 0 60px rgba(255, 0, 0, 0.1);
+  border-right: 3px solid #ff4500;
+}
+
+/* Campos personalizados */
+.custom-input {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+  border: 1px solid #ff4500 !important;
+  border-radius: 8px;
+  padding: 12px;
+}
+.custom-input::placeholder {
+  color: #bfbfbf;
+}
+
+/* Botón de Google */
+.btn-google {
+  background-color: #fff !important;
+  color: #000 !important;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: all 0.2s ease-in-out;
+}
+.btn-google:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+/* Botón Iniciar Sesión */
+.btn-login {
+  background: linear-gradient(135deg, #ff4500, #ff7300) !important;
+  color: white !important;
+  border: none;
+  border-radius: 10px;
+  transition: all 0.2s ease-in-out;
+}
+.btn-login:hover {
+  transform: scale(1.03);
+  box-shadow: 0 0 15px rgba(255, 68, 0, 0.6);
+}
+.btn-login:active {
+  transform: scale(0.97);
+}
+
+/* Botón Registrarse */
+.btn-register {
+  background: linear-gradient(135deg, #ff7300, #ffb347);
+  color: #fff !important;
+  border-radius: 10px;
+  transition: transform 0.2s ease-in-out;
+}
+.btn-register:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(255, 115, 0, 0.5);
+}
+
+/* Separador */
+.separator {
+  color: #aaa;
+  font-weight: 500;
+  position: relative;
+}
+.separator::before,
+.separator::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 40%;
+  height: 1px;
+  background-color: #444;
+}
+.separator::before {
+  left: 0;
+}
+.separator::after {
+  right: 0;
+}
+
+/* Tooltip personalizado */
+.tooltip-inner {
+  background-color: #ff4500 !important;
+  color: #fff !important;
+  font-weight: 500;
+  font-size: 0.9rem;
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+.tooltip.bs-tooltip-top .tooltip-arrow::before {
+  border-top-color: #ff4500 !important;
+}
+.tooltip.bs-tooltip-bottom .tooltip-arrow::before {
+  border-bottom-color: #ff4500 !important;
+}
+.tooltip.bs-tooltip-end .tooltip-arrow::before {
+  border-right-color: #ff4500 !important;
+}
+.tooltip.bs-tooltip-start .tooltip-arrow::before {
+  border-left-color: #ff4500 !important;
+}
+</style>
+
+<!-- Script para activar los tooltips -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+  });
+</script>
+{% endblock %}

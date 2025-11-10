@@ -1,0 +1,101 @@
+{% extends 'baseadmin.html' %}
+
+{% block title %}{{ 'Nuevo Usuario' if modo == 'crear' else 'Editar Usuario' }}{% endblock %}
+
+{% block body %}
+<!-- Contenedor principal centrado y con ancho limitado -->
+<div class="container mt-4" style="max-width: 720px;">
+
+  <!-- Título cambia según si se crea o se edita -->
+  <h2 class="mb-3" data-bs-toggle="tooltip" title="Administración de usuarios del sistema">
+    {{ 'Nuevo Usuario' if modo == 'crear' else 'Editar Usuario' }}
+  </h2>
+
+  <!-- Mensajes flash (ej: éxito o error) -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+      <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+      </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <!-- Formulario para crear/editar usuario -->
+  <form method="post" class="card p-3 shadow-sm">
+    
+    <!-- Campo: Nombre -->
+    <div class="mb-3">
+      <label class="form-label fw-bold" data-bs-toggle="tooltip" title="Introduce el nombre completo del usuario.">Nombre</label>
+      <input type="text" name="nombre" class="form-control"
+             value="{{ usuario.nombre or '' }}" required
+             data-bs-toggle="tooltip" title="Ejemplo: Carlos Martínez">
+    </div>
+
+    <!-- Campo: Correo -->
+    <div class="mb-3">
+      <label class="form-label fw-bold" data-bs-toggle="tooltip" title="Correo electrónico único para iniciar sesión.">Correo</label>
+      <input type="email" name="email" class="form-control"
+             value="{{ usuario.email or '' }}" required
+             data-bs-toggle="tooltip" title="Ejemplo: usuario@empresa.com">
+    </div>
+
+    <!-- Campo: Password -->
+    <div class="mb-3">
+      <label class="form-label fw-bold" data-bs-toggle="tooltip" title="Contraseña para acceder al sistema.">Password</label>
+      <input type="text" name="password" class="form-control"
+             value="{{ usuario.password or '' }}" required
+             data-bs-toggle="tooltip" title="Recomendado mínimo 8 caracteres.">
+    </div>
+
+    <!-- Botones de acción -->
+    <div class="d-flex gap-2">
+
+      <!-- Botón principal con tooltip -->
+      <button class="btn btn-primary" type="submit" 
+              data-bs-toggle="tooltip" data-bs-placement="top" 
+              title="{{ 'Crear un nuevo usuario' if modo == 'crear' else 'Guardar los cambios realizados' }}">
+        {{ 'Crear' if modo == 'crear' else 'Guardar Cambios' }}
+      </button>
+
+      <!-- Botón cancelar con tooltip -->
+      <a class="btn btn-secondary" href="{{ url_for('lista_usuarios') }}"
+         data-bs-toggle="tooltip" data-bs-placement="top"
+         title="Cancelar y volver a la lista de usuarios">
+        Cancelar
+      </a>
+    </div>
+  </form>
+</div>
+
+<!-- Script para activar los tooltips de Bootstrap -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+
+    const tooltipEls = Array.from(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    const tooltipInstances = tooltipEls.map(el => new bootstrap.Tooltip(el));
+
+    // ✅ Mostrar solo UN tooltip a la vez (igual que en tus demás pantallas)
+    document.addEventListener('shown.bs.tooltip', function (e) {
+      tooltipInstances.forEach(t => {
+        if (t._element !== e.target) t.hide();
+      });
+    });
+
+    tooltipEls.forEach((el) => {
+      el.addEventListener('mouseenter', () => {
+        tooltipInstances.forEach(t => {
+          if (t._element !== el) t.hide();
+        });
+      });
+      el.addEventListener('mouseleave', () => {
+        const inst = bootstrap.Tooltip.getInstance(el);
+        if (inst) inst.hide();
+      });
+    });
+
+  });
+</script>
+{% endblock %}

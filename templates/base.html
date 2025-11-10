@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}Mi App{% endblock %}</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='Richard.jpg') }}">
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+  <style>
+    /* 🏍️ FONDO BASE CON GRADIENTE DE PODER */
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: radial-gradient(circle at top right, #0a0a0a, #1a1a1a, #0f0f0f);
+      color: #f8f9fa;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* 🔥 PARTÍCULAS DE ENERGÍA */
+    .particle {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background: radial-gradient(circle, #ff2d2d, #ff9900);
+      border-radius: 50%;
+      box-shadow: 0 0 10px rgba(255, 77, 0, 0.9), 0 0 25px rgba(255, 77, 0, 0.6);
+      animation: float 8s infinite ease-in-out;
+      opacity: 0.7;
+      z-index: 1;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(0) translateX(0) scale(1);
+        opacity: 0.6;
+      }
+
+      50% {
+        transform: translateY(-100px) translateX(60px) scale(1.3);
+        opacity: 1;
+      }
+
+      100% {
+        transform: translateY(0) translateX(0) scale(1);
+        opacity: 0.6;
+      }
+    }
+
+    /* 🟥 NAVBAR */
+    .navbar {
+      backdrop-filter: blur(10px);
+      background: rgba(0, 0, 0, 0.8);
+      border-bottom: 2px solid rgba(255, 50, 0, 0.5);
+      box-shadow: 0 0 20px rgba(255, 60, 0, 0.3);
+      transition: 0.4s ease-in-out;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .navbar.scrolled {
+      background: rgba(20, 20, 20, 0.95);
+      box-shadow: 0 0 30px rgba(255, 80, 0, 0.6);
+    }
+
+    .navbar-brand {
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: #ff4d00 !important;
+      letter-spacing: 1px;
+      text-shadow: 0 0 12px rgba(255, 77, 0, 0.7);
+      transition: 0.3s;
+    }
+
+    .navbar-brand:hover {
+      color: #ffd700 !important;
+      transform: scale(1.1);
+    }
+
+    .nav-link {
+      color: #f0f0f0 !important;
+      font-weight: 500;
+      margin: 0 12px;
+      transition: 0.3s;
+    }
+
+    .nav-link:hover {
+      color: #ff4d00 !important;
+      text-shadow: 0 0 10px rgba(255, 77, 0, 0.8);
+      transform: translateY(-2px);
+    }
+
+    .btn-login {
+      background: linear-gradient(90deg, #ff4d00, #ffb800);
+      color: #000;
+      font-weight: 600;
+      border-radius: 25px;
+      padding: 8px 22px;
+      box-shadow: 0 0 15px rgba(255, 77, 0, 0.6);
+      transition: 0.3s;
+    }
+
+    .btn-login:hover {
+      transform: scale(1.1);
+      background: linear-gradient(90deg, #ffd700, #ff4d00);
+      box-shadow: 0 0 30px rgba(255, 153, 0, 0.8);
+      color: #111;
+    }
+
+    /* 🧩 CONTENIDO */
+    main {
+      min-height: 80vh;
+      position: relative;
+      z-index: 2;
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ⚡ FOOTER */
+    footer {
+      background: linear-gradient(180deg, #0a0a0a, #1a1a1a);
+      border-top: 2px solid rgba(255, 60, 0, 0.4);
+      box-shadow: inset 0 0 40px rgba(255, 77, 0, 0.2);
+      padding-top: 3rem;
+      padding-bottom: 1.5rem;
+      position: relative;
+    }
+
+    footer::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, #ff4d00, #ffd700, #ff4d00);
+      background-size: 200% 100%;
+      animation: glowLine 3s linear infinite;
+    }
+
+    @keyframes glowLine {
+      0% {
+        background-position: 0 0;
+      }
+
+      100% {
+        background-position: 200% 0;
+      }
+    }
+
+    footer h5 {
+      color: #ffb800;
+      font-weight: 600;
+    }
+
+    footer a {
+      color: #f0f0f0;
+      text-decoration: none;
+      transition: 0.3s;
+    }
+
+    footer a:hover {
+      color: #ff4d00;
+      text-shadow: 0 0 10px rgba(255, 77, 0, 0.8);
+    }
+
+    .footer-bottom {
+      border-top: 1px solid rgba(255, 77, 0, 0.2);
+      margin-top: 2rem;
+      padding-top: 1rem;
+      text-align: center;
+      color: #bbb;
+      font-size: 0.9rem;
+    }
+
+    .footer-bottom span {
+      color: #ff4d00;
+      font-weight: 600;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- 🔥 Partículas brillantes -->
+  <div class="particle" style="top:10%; left:15%; animation-delay:0s;"></div>
+  <div class="particle" style="top:30%; left:70%; animation-delay:2s;"></div>
+  <div class="particle" style="top:50%; left:40%; animation-delay:4s;"></div>
+  <div class="particle" style="top:80%; left:80%; animation-delay:1s;"></div>
+  <div class="particle" style="top:60%; left:10%; animation-delay:3s;"></div>
+  <div class="particle" style="top:25%; left:50%; animation-delay:1.5s;"></div>
+  <div class="particle" style="top:70%; left:30%; animation-delay:2.5s;"></div>
+
+  <!-- 🔹 NAVBAR -->
+  <nav class="navbar navbar-expand-lg navbar-dark py-3" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Navega por MotoForce con estilo ⚡">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="{{ url_for('inicio') }}" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Ir al inicio de MotoForce">
+        <i class="bi bi-lightning-charge-fill"></i> MOTOFORCE
+      </a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Mostrar menú">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav mx-auto text-center">
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('inicio') }}" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Página principal">Inicio</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('contactopost') }}" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Contáctanos directamente">Contactos</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('acercade') }}" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Conoce más sobre MotoForce">Acerca de</a></li>
+        </ul>
+        <div class="text-center mt-2 mt-lg-0">
+          <a class="btn btn-login" href="{{ url_for('login') }}" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Accede a tu cuenta o inicia sesión">
+            <i class="bi bi-person-fill"></i> Login
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 🔹 CONTENIDO -->
+  <main>
+    {% block contenido %}{% endblock %}
+  </main>
+
+  <!-- 🔹 FOOTER -->
+  <footer data-bs-toggle="tooltip" data-bs-placement="top" title="¡Gracias por visitar MotoForce!">
+    <div class="container text-center text-md-start">
+      <div class="row">
+
+        <div class="col-md-3 col-lg-3 col-xl-3 mx-auto mt-3">
+          <h5>APP SYSTEM</h5>
+          <p>Las Lajitas, Chontales</p>
+          <p>Nicaragua</p>
+        </div>
+
+        <div class="col-md-2 col-lg-2 col-xl-2 mx-auto mt-3">
+          <h5>Modelos</h5>
+          <p><a href="#" data-bs-toggle="tooltip" title="Ducati Panigale V4 - velocidad extrema">Ducati Panigale V4</a></p>
+          <p><a href="#" data-bs-toggle="tooltip" title="Harley-Davidson Fat Boy - potencia clásica">Harley-Davidson Fat Boy</a></p>
+          <p><a href="#" data-bs-toggle="tooltip" title="BMW S1000RR - precisión alemana">BMW S1000RR</a></p>
+        </div>
+
+        <div class="col-md-3 col-lg-2 col-xl-2 mx-auto mt-3">
+          <h5>Enlaces</h5>
+          <p><a href="#" data-bs-toggle="tooltip" title="Lee nuestros términos y condiciones">Términos y Condiciones</a></p>
+        </div>
+
+        <div class="col-md-4 col-lg-3 col-xl-3 mx-auto mt-3">
+          <h5>Contacto</h5>
+          <p><a href="https://www.facebook.com/" target="_blank" data-bs-toggle="tooltip" title="Síguenos en Facebook"><i class="bi bi-facebook"></i> Facebook</a></p>
+          <p><a href="https://www.instagram.com/" target="_blank" data-bs-toggle="tooltip" title="Síguenos en Instagram"><i class="bi bi-instagram"></i> Instagram</a></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      © 2025 - Desarrollado por <span>Jimmy Gutiérrez</span>. Todos los derechos reservados.
+    </div>
+  </footer>
+
+  <!-- 🔸 Navbar scroll efecto -->
+  <script>
+    window.addEventListener('scroll', function () {
+      const navbar = document.querySelector('.navbar');
+      navbar.classList.toggle('scrolled', window.scrollY > 50);
+    });
+
+    // Inicializar tooltips
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    [...tooltipTriggerList].forEach(el => new bootstrap.Tooltip(el));
+  </script>
+
+  <!-- Bootstrap Bundle JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

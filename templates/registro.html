@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+
+{% block titulo %} REGISTRO {% endblock %}
+
+{% block contenido %}
+<!-- Mostrar mensajes flash -->
+{% with msg = get_flashed_messages(with_categories=True) %}
+  {% if msg %}
+    {% for category, message in msg %}
+      <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        <strong>{{ message }}</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<div class="container-fluid vh-100 login-bg d-flex justify-content-center align-items-center">
+  <div class="card login-card shadow-lg border-0">
+    <div class="row g-0">
+
+      <!-- Panel izquierdo -->
+      <div class="col-md-6 d-none d-md-flex align-items-center justify-content-center bg-moto-left text-white p-5 flex-column">
+        <img src="{{ url_for('static', filename='registro.png') }}" alt="Imagen Registro"
+             class="img-fluid mb-4" style="width: 220px; height: 220px; object-fit: contain;">
+        <h2 class="fw-bold mb-3 text-center text-light text-uppercase">Únete a Motoforce</h2>
+        <p class="text-center mb-4 text-light">Regístrate para acceder a todo el poder y control de tu cuenta.  
+        Es rápido, fácil y completamente gratis.</p>
+        <a href="{{ url_for('login') }}" class="btn btn-lg btn-register text-uppercase fw-bold px-4 py-2"
+           data-bs-toggle="tooltip" data-bs-placement="top" title="Volver al inicio de sesión">
+          Volver al Login
+        </a>
+      </div>
+
+      <!-- Panel derecho -->
+      <div class="col-md-6 bg-dark text-light d-flex align-items-center">
+        <div class="card-body p-5 w-100">
+
+          <h2 class="fw-bold mb-4 text-center text-uppercase text-warning">Crear Cuenta</h2>
+
+          <!-- Formulario -->
+          <form action="{{ url_for('registro') }}" method="POST" class="needs-validation" novalidate>
+            
+            <div class="form-outline mb-4">
+              <input name="nombre" type="text" id="nombre" class="form-control form-control-lg custom-input"
+                     placeholder="Nombre completo" required
+                     data-bs-toggle="tooltip" data-bs-placement="right" title="Escribe tu nombre completo" />
+            </div>
+
+            <div class="form-outline mb-4">
+              <input name="email" type="email" id="email" class="form-control form-control-lg custom-input"
+                     placeholder="Correo electrónico" required
+                     data-bs-toggle="tooltip" data-bs-placement="right" title="Introduce un correo válido para tu cuenta" />
+            </div>
+
+            <div class="form-outline mb-4">
+              <input name="password" type="password" id="password" class="form-control form-control-lg custom-input"
+                     placeholder="Contraseña" required
+                     data-bs-toggle="tooltip" data-bs-placement="right" title="Crea una contraseña segura" />
+            </div>
+
+            <div class="form-outline mb-4">
+              <input name="confirmar_password" type="password" id="confirmar_password" class="form-control form-control-lg custom-input"
+                     placeholder="Confirmar contraseña" required
+                     data-bs-toggle="tooltip" data-bs-placement="right" title="Repite tu contraseña para confirmar" />
+            </div>
+
+            <!-- Botón de registro -->
+            <div class="d-grid mb-3">
+              <button class="btn btn-lg btn-login text-uppercase fw-bold" type="submit"
+                      data-bs-toggle="tooltip" data-bs-placement="bottom" title="Haz clic para crear tu cuenta Motoforce">
+                Registrarse
+              </button>
+            </div>
+
+            <!-- Enlace al login -->
+            <div class="text-center">
+              <p class="text-secondary mb-0">¿Ya tienes una cuenta?  
+                <a href="{{ url_for('login') }}" class="text-warning fw-bold"
+                   data-bs-toggle="tooltip" data-bs-placement="top" title="Inicia sesión con tu cuenta existente">
+                  Inicia Sesión
+                </a>
+              </p>
+            </div>
+          </form>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<style>
+/* Fondo general */
+.login-bg {
+  background: radial-gradient(circle at top, #1a1a1a 0%, #0d0d0d 100%);
+  background-image: url('{{ url_for("static", filename="fondo_moto.jpg") }}');
+  background-size: cover;
+  background-position: center;
+  background-blend-mode: overlay;
+}
+
+/* Tarjeta */
+.login-card {
+  width: 90%;
+  max-width: 1000px;
+  border-radius: 1rem;
+  overflow: hidden;
+  backdrop-filter: blur(5px);
+}
+
+/* Panel izquierdo */
+.bg-moto-left {
+  background: linear-gradient(135deg, #202020, #383838);
+  box-shadow: inset 0 0 60px rgba(255, 0, 0, 0.1);
+  border-right: 3px solid #ff4500;
+}
+
+/* Campos personalizados */
+.custom-input {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+  border: 1px solid #ff4500 !important;
+  border-radius: 8px;
+  padding: 12px;
+}
+.custom-input::placeholder {
+  color: #bfbfbf;
+}
+
+/* Botón principal */
+.btn-login {
+  background: linear-gradient(135deg, #ff4500, #ff7300) !important;
+  color: white !important;
+  border: none;
+  border-radius: 10px;
+  transition: all 0.2s ease-in-out;
+}
+.btn-login:hover {
+  transform: scale(1.03);
+  box-shadow: 0 0 15px rgba(255, 68, 0, 0.6);
+}
+
+/* Botón volver */
+.btn-register {
+  background: linear-gradient(135deg, #ff7300, #ffb347);
+  color: #fff !important;
+  border-radius: 10px;
+  transition: transform 0.2s ease-in-out;
+}
+.btn-register:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(255, 115, 0, 0.5);
+}
+
+/* Tooltip personalizado */
+.tooltip-inner {
+  background-color: #ff4500 !important;
+  color: #fff !important;
+  font-weight: 500;
+  font-size: 0.9rem;
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+.tooltip.bs-tooltip-top .tooltip-arrow::before {
+  border-top-color: #ff4500 !important;
+}
+.tooltip.bs-tooltip-bottom .tooltip-arrow::before {
+  border-bottom-color: #ff4500 !important;
+}
+.tooltip.bs-tooltip-end .tooltip-arrow::before {
+  border-right-color: #ff4500 !important;
+}
+.tooltip.bs-tooltip-start .tooltip-arrow::before {
+  border-left-color: #ff4500 !important;
+}
+</style>
+
+<!-- Script para activar tooltips -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+  });
+</script>
+{% endblock %}

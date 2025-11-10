@@ -1,0 +1,90 @@
+{% extends 'baseadmin.html' %}
+
+{% block title %}Lista de Usuarios{% endblock %}
+
+{% block body %}
+<!-- Contenedor principal -->
+<div class="container mt-4">
+
+  <!-- Encabezado con título y botones -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="m-0">Lista de Usuarios</h2>
+    <div>
+      <!-- Botón Agregar Usuario -->
+      <a href="{{ url_for('crear_usuario') }}" class="btn btn-success me-2" 
+         data-bs-toggle="tooltip" data-bs-placement="top" title="Agregar un nuevo usuario">
+        Agregar Usuario
+      </a>
+      <!-- Botón Exportar Usuarios -->
+      <a href="{{ url_for('exportar_usuarios') }}" class="btn btn-primary"
+         data-bs-toggle="tooltip" data-bs-placement="top" title="Exportar todos los usuarios a Excel/CSV">
+        <i class="bi bi-download me-1"></i> Exportar Usuarios
+      </a>
+    </div>
+  </div>
+
+  <!-- Mensajes flash (ej: usuario creado o eliminado) -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+      <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+      </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <!-- Tabla con todos los usuarios -->
+  <div class="table-responsive">
+    <table class="table table-striped table-bordered align-middle">
+      <thead class="table-dark">
+        <tr>
+          <th>N°</th>
+          <th>Nombre</th>
+          <th>Correo</th>
+          <th>Password</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Si hay usuarios, se muestran en filas -->
+        {% for u in usuarios %}
+        <tr>
+          <td>{{ u.id }}</td>       <!-- ID -->
+          <td>{{ u.nombre }}</td>   <!-- Nombre -->
+          <td>{{ u.email }}</td>    <!-- Correo -->
+          <td>{{ u.password }}</td> <!-- Password (⚠️ en producción nunca se debe mostrar en texto plano) -->
+          <td>
+            <!-- Botón para editar -->
+            <a href="{{ url_for('editar_usuario', uid=u.id) }}" class="btn btn-sm btn-primary">Editar</a>
+            
+            <!-- Botón para eliminar con confirmación -->
+            <form action="{{ url_for('eliminar_usuario', uid=u.id) }}" method="post" class="d-inline"
+                  onsubmit="return confirm('¿Eliminar al usuario {{ u.nombre }}?');">
+              <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <!-- Si no hay usuarios -->
+        <tr>
+          <td colspan="5" class="text-center text-muted">No hay usuarios registrados.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- Script para activar los tooltips de Bootstrap -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+  })
+</script>
+{% endblock %}

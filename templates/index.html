@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Inicio{% endblock %}
+
+{% block contenido %}
+
+<!-- Carousel -->
+<div id="carouselExample" class="carousel slide" data-bs-ride="carousel" data-bs-interval="2000">
+  <div class="carousel-inner">
+    <div class="carousel-item active">
+      <img src="{{ url_for('static', filename='moto1.jpg') }}" class="d-block w-100" alt="...">
+    </div>
+    <div class="carousel-item">
+      <img src="{{ url_for('static', filename='moto2.jpg') }}" class="d-block w-100" alt="...">
+    </div>
+    <div class="carousel-item">
+      <img src="{{ url_for('static', filename='moto3.jpg') }}" class="d-block w-100" alt="...">
+    </div>
+  </div>
+  <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
+    <span class="carousel-control-prev-icon"></span>
+    <span class="visually-hidden">Anterior</span>
+  </button>
+  <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
+    <span class="carousel-control-next-icon"></span>
+    <span class="visually-hidden">Siguiente</span>
+  </button>
+</div>
+
+<!-- Información -->
+<div class="container mt-5">
+  <h2 class="text-center mb-4">Novedades</h2>
+  <div class="row">
+    <div class="col-sm-4">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Ducati</h5>
+          <p class="card-text">Ducati es sinónimo de pasión italiana en dos ruedas: ingeniería avanzada, diseño deportivo y un sonido inconfundible. Modelos como Panigale, Monster y Multistrada combinan potencia, ligereza y tecnología de punta, ofreciendo una experiencia de conducción única que mezcla adrenalina y elegancia.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-4">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Harley-Davidson</h5>
+          <p class="card-text">Harley-Davidson representa libertad y estilo de vida. Con sus motores V-Twin, diseño robusto y el característico rugido de escape, cada motocicleta es un ícono de la carretera abierta. Modelos legendarios como Fat Boy, Street Glide y Sportster son símbolos de cultura y espíritu biker.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-4">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">BMW Motorrad</h5>
+          <p class="card-text">BMW Motorrad combina precisión alemana, tecnología innovadora y seguridad de vanguardia. Modelos como la S1000RR, GS Adventure y R NineT destacan por su potencia, estabilidad y confort, ofreciendo motocicletas diseñadas para dominar tanto las pistas como los viajes largos.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modelos -->
+<div class="container mt-5">
+  <h2 class="text-center mb-4">Modelos</h2>
+  <div class="row">
+    <!-- Ducati -->
+    <div class="col-sm-4">
+      <div class="card h-100 shadow-sm">
+        <img src="{{ url_for('static', filename='modelo1.jpg') }}" class="card-img-top" alt="Panigale">
+        <div class="card-body">
+          <h5 class="card-title">Ducati Panigale V4</h5>
+          <p class="card-text">
+            La Ducati Panigale V4 es una superbike que redefine el rendimiento.
+          </p>
+          <div class="collapse" id="infoDucati">
+            <p class="card-text">
+              Con más de 200 caballos de fuerza, aerodinámica inspirada en MotoGP y una electrónica avanzada, ofrece una experiencia de velocidad y control extrema, diseñada para conquistar tanto pista como carretera. Su chasis de aluminio y control de tracción garantizan estabilidad incluso en las curvas más exigentes.
+            </p>
+          </div>
+          <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#infoDucati" aria-expanded="false" aria-controls="infoDucati">
+            Ver más
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Harley -->
+    <div class="col-sm-4">
+      <div class="card h-100 shadow-sm">
+        <img src="{{ url_for('static', filename='modelo2.jpg') }}" class="card-img-top" alt="Fat Boy">
+        <div class="card-body">
+          <h5 class="card-title">Harley-Davidson Fat Boy</h5>
+          <p class="card-text">
+            La Harley-Davidson Fat Boy es un ícono de estilo custom.
+          </p>
+          <div class="collapse" id="infoHarley">
+            <p class="card-text">
+              Con presencia imponente y motor Milwaukee-Eight, su diseño robusto, acabados cromados y conducción relajada la convierten en una motocicleta ideal para viajes largos con pura actitud americana. Es sinónimo de libertad y espíritu clásico del motociclismo estadounidense.
+            </p>
+          </div>
+          <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#infoHarley" aria-expanded="false" aria-controls="infoHarley">
+            Ver más
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BMW -->
+    <div class="col-sm-4">
+      <div class="card h-100 shadow-sm">
+        <img src="{{ url_for('static', filename='modelo3.jpg') }}" class="card-img-top" alt="S1000RR">
+        <div class="card-body">
+          <h5 class="card-title">BMW S1000RR</h5>
+          <p class="card-text">
+            La BMW S1000RR es una de las superbikes más avanzadas del mundo.
+          </p>
+          <div class="collapse" id="infoBMW">
+            <p class="card-text">
+              Con motor de 4 cilindros y más de 200 caballos de fuerza, control dinámico de tracción y un diseño agresivo, ofrece precisión y adrenalina tanto en circuito como en carretera. Su ingeniería alemana redefine la velocidad y estabilidad en el motociclismo moderno.
+            </p>
+          </div>
+          <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#infoBMW" aria-expanded="false" aria-controls="infoBMW">
+            Ver más
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
