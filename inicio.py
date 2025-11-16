@@ -4,6 +4,7 @@ from flask_mysqldb import MySQL
 from passlib.hash import pbkdf2_sha256
 import csv
 import io
+from datetime import datetime
 
 # Crea la aplicación Flask
 app = Flask(__name__)
@@ -101,7 +102,7 @@ def contactopost():
 def login():
     return render_template("login.html")
 
-# ============================ PANEL ADMIN (ACTUALIZADO) =====================
+# ============================ PANEL ADMIN =====================
 @app.route('/admin')
 def admin():
     if not session.get('logueado'):
@@ -281,7 +282,6 @@ def eliminar_usuario(uid):
 
     return redirect(url_for('lista_usuarios'))
 
-# ====================== EXPORTAR USUARIOS CORREGIDO =========================
 @app.route('/usuarios/exportar')
 def exportar_usuarios():
     if not session.get('logueado'):
@@ -319,19 +319,22 @@ def listar_productos_agregados():
         nombre = request.form.get('nombre', '').strip()
         precio = request.form.get('precio', '').strip()
         descripcion = request.form.get('descripcion', '').strip()
-        fecha = request.form.get('fecha', '').strip()  # <-- FECHA desde el formulario
+        fecha_form = request.form.get('fecha', '').strip()  # <-- FECHA editable
 
-        # Validación mínima: obligar a que la fecha venga
-        if not nombre or not precio:
-            flash('Nombre y precio son obligatorios', 'warning')
-        elif not fecha:
-            flash('La fecha es obligatoria', 'warning')
+        if not nombre or not precio or not fecha_form:
+            flash('Nombre, precio y fecha son obligatorios', 'warning')
         else:
             try:
-                # Inserta usando la fecha proporcionada (sin NOW())
+                # Combina la fecha seleccionada con la hora actual automáticamente
+                fecha_actualizada = datetime.now()
+                fecha_final = datetime.combine(
+                    datetime.strptime(fecha_form, '%Y-%m-%d').date(),
+                    fecha_actualizada.time()
+                )
+
                 cur.execute(
                     "INSERT INTO producto (nombre, precio, descripcion, fecha) VALUES (%s, %s, %s, %s)",
-                    (nombre, precio, descripcion, fecha)
+                    (nombre, precio, descripcion, fecha_final)
                 )
                 mysql.connection.commit()
                 flash('Producto agregado correctamente', 'success')
@@ -341,12 +344,64 @@ def listar_productos_agregados():
                 mysql.connection.rollback()
                 flash(f'Error al agregar producto: {e}', 'danger')
 
-    # Listado incluyendo fecha
     cur.execute("SELECT id, nombre, precio, descripcion, fecha FROM producto ORDER BY id")
     productos = cur.fetchall()
     cur.close()
 
     return render_template('productos_agregar.html', productos=productos)
+
+@app.route('/productos/<int:pid>/editar', methods=['GET', 'POST'])
+def editar_producto(pid):
+    if not session.get('logueado'):
+        flash('Primero inicia sesión', 'warning')
+        return redirect(url_for('login'))
+
+    cur = mysql.connection.cursor()
+
+    if request.method == 'POST':
+        nombre = request.form.get('nombre', '').strip()
+        precio = request.form.get('precio', '').strip()
+        descripcion = request.form.get('descripcion', '').strip()
+        fecha_form = request.form.get('fecha', '').strip()  # <-- FECHA editable
+
+        if not nombre or not precio or not fecha_form:
+            flash('Nombre, precio y fecha son obligatorios', 'warning')
+            cur.close()
+            return redirect(url_for('editar_producto', pid=pid))
+
+        try:
+            # Combina la fecha seleccionada con la hora actual automáticamente
+            fecha_actualizada = datetime.now()
+            fecha_final = datetime.combine(
+                datetime.strptime(fecha_form, '%Y-%m-%d').date(),
+                fecha_actualizada.time()
+            )
+
+            cur.execute("""
+                UPDATE producto
+                   SET nombre=%s, precio=%s, descripcion=%s, fecha=%s
+                 WHERE id=%s
+            """, (nombre, precio, descripcion, fecha_final, pid))
+            
+            mysql.connection.commit()
+            flash('Producto actualizado correctamente', 'success')
+        except Exception as e:
+            mysql.connection.rollback()
+            flash(f'No se pudo actualizar: {e}', 'danger')
+        finally:
+            cur.close()
+
+        return redirect(url_for('productos_listar'))
+
+    cur.execute("SELECT id, nombre, precio, descripcion, fecha FROM producto WHERE id=%s", (pid,))
+    producto = cur.fetchone()
+    cur.close()
+
+    if not producto:
+        flash('Producto no encontrado', 'warning')
+        return redirect(url_for('productos_listar'))
+
+    return render_template('productos_form.html', producto=producto, modo='editar')
 
 @app.route('/productos/listar')
 def productos_listar():
@@ -360,10 +415,6 @@ def productos_listar():
     cur.close()
 
     return render_template('productos_listar.html', productos=productos)
-
-@app.route('/productos')
-def listar_productos():
-    return redirect(url_for('productos_listar'))
 
 @app.route('/productos/<int:pid>/eliminar', methods=['POST'])
 def eliminar_producto(pid):
@@ -384,49 +435,9 @@ def eliminar_producto(pid):
 
     return redirect(url_for('productos_listar'))
 
-@app.route('/productos/<int:pid>/editar', methods=['GET', 'POST'])
-def editar_producto(pid):
-    if not session.get('logueado'):
-        flash('Primero inicia sesión', 'warning')
-        return redirect(url_for('login'))
-
-    cur = mysql.connection.cursor()
-
-    if request.method == 'POST':
-        nombre = request.form.get('nombre', '').strip()
-        precio = request.form.get('precio', '').strip()
-        descripcion = request.form.get('descripcion', '').strip()
-
-        if not nombre or not precio:
-            flash('Nombre y precio son obligatorios', 'warning')
-            cur.close()
-            return redirect(url_for('editar_producto', pid=pid))
-
-        try:
-            cur.execute("""
-                UPDATE producto
-                   SET nombre=%s, precio=%s, descripcion=%s
-                 WHERE id=%s
-            """, (nombre, precio, descripcion, pid))
-            mysql.connection.commit()
-            flash('Producto actualizado correctamente', 'success')
-        except Exception as e:
-            mysql.connection.rollback()
-            flash(f'No se pudo actualizar: {e}', 'danger')
-        finally:
-            cur.close()
-
-        return redirect(url_for('productos_listar'))
-
-    cur.execute("SELECT id, nombre, precio, descripcion, fecha FROM producto WHERE id=%s", (pid,))
-    producto = cur.fetchone()
-    cur.close()
-
-    if not producto:
-        flash('Producto no encontrado', 'warning')
-        return redirect(url_for('productos_listar'))
-
-    return render_template('productos_form.html', producto=producto, modo='editar')
+@app.route('/productos')
+def listar_productos():
+    return redirect(url_for('productos_listar'))
 
 # =============================== EJECUCIÓN ================================
 if __name__ == '__main__':
