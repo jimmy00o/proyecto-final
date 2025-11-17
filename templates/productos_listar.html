@@ -5,10 +5,34 @@
 {% block body %}
 <div class="container mt-4">
   <div class="card shadow-sm">
-    <div class="card-header bg-danger bg-opacity-25 text-center">
-      <h4 class="m-0">Lista de Producto</h4>
+    <div class="card-header bg-danger bg-opacity-25 text-center d-flex justify-content-between align-items-center">
+
+      <h4 class="m-0 flex-grow-1 text-center">Lista de Producto</h4>
+
+      <!-- BOTÓN EXPORTAR A EXCEL -->
+      <a href="{{ url_for('exportar_productos') }}" class="btn btn-success btn-sm">
+        <i class="bi bi-file-earmark-excel"></i> Exportar Excel
+      </a>
+
     </div>
+
     <div class="card-body">
+
+      <!-- SweetAlert2 Flash -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+          <script>
+            Swal.fire({
+              icon: "{{ category }}",
+              title: "{{ message }}",
+              showConfirmButton: false,
+              timer: 2000
+            });
+          </script>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
 
       <div class="table-responsive">
         <table id="tablaProductos" class="table table-bordered table-striped align-middle">
@@ -34,13 +58,18 @@
                 <a href="{{ url_for('editar_producto', pid=p.id) }}" class="btn btn-sm btn-success me-1" title="Editar">
                   <i class="bi bi-pencil-square"></i>
                 </a>
-                <form action="{{ url_for('eliminar_producto', pid=p.id) }}" method="post" class="d-inline"
-                      onsubmit="return confirm('¿Seguro de eliminar {{ p.nombre }}?');">
-                  <button type="submit" class="btn btn-sm btn-danger" title="Eliminar">
+
+                <form action="{{ url_for('eliminar_producto', pid=p.id) }}" method="post" class="d-inline eliminar-form">
+                  <button type="submit" class="btn btn-sm btn-danger btn-eliminar" data-nombre="{{ p.nombre }}" title="Eliminar">
                     <i class="bi bi-trash"></i>
                   </button>
                 </form>
+
               </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="6" class="text-center text-muted">No hay productos registrados.</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -52,12 +81,38 @@
 </div>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    new DataTable('#tablaProductos', {
-      responsive: true,
-      language: { url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json" },
-      pageLength: 5
+document.addEventListener('DOMContentLoaded', function () {
+
+  // DataTable
+  new DataTable('#tablaProductos', {
+    responsive: true,
+    language: { url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json" },
+    pageLength: 5
+  });
+
+  // Confirmación SweetAlert2 antes de eliminar
+  document.querySelectorAll('.eliminar-form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const nombre = form.querySelector('.btn-eliminar').dataset.nombre;
+
+      Swal.fire({
+        title: `¿Eliminar "${nombre}"?`,
+        text: "¡Esta acción no se puede deshacer!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar',
+      }).then((result) => {
+        if (result.isConfirmed) {
+          form.submit();
+        }
+      });
     });
   });
+
+});
 </script>
 {% endblock %}

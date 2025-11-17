@@ -36,7 +36,7 @@
               <textarea name="descripcion" rows="3" class="form-control" placeholder="Ej: Motor 900cc, transmisión de 6 velocidades, frenos ABS."></textarea>
             </div>
 
-            <!-- ✅ NUEVO CAMPO: FECHA -->
+            <!-- Fecha -->
             <div class="mb-3">
               <label class="form-label fw-bold">Fecha</label>
               <input type="date" name="fecha" class="form-control" required>
@@ -59,13 +59,18 @@
 
         <div class="card-body">
 
+          <!-- ALERTAS SWEETALERT2 PARA AGREGAR / ELIMINAR -->
           {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
               {% for category, message in messages %}
-              <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-              </div>
+              <script>
+                Swal.fire({
+                  icon: "{{ category }}",
+                  title: "{{ message }}",
+                  showConfirmButton: false,
+                  timer: 2000
+                });
+              </script>
               {% endfor %}
             {% endif %}
           {% endwith %}
@@ -91,9 +96,13 @@
                   <td>{{ p.descripcion }}</td>
                   <td>{{ p.fecha if p.fecha else '—' }}</td>
                   <td>
-                    <form action="{{ url_for('eliminar_producto', pid=p.id) }}" method="post" class="d-inline"
-                          onsubmit="return confirm('¿Eliminar la moto {{ p.nombre }}?');">
-                      <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                    <a href="{{ url_for('editar_producto', pid=p.id) }}" class="btn btn-sm btn-success me-1">
+                      <i class="bi bi-pencil-square"></i>
+                    </a>
+                    <form action="{{ url_for('eliminar_producto', pid=p.id) }}" method="post" class="d-inline eliminar-form">
+                      <button type="submit" class="btn btn-sm btn-danger btn-eliminar" data-nombre="{{ p.nombre }}">
+                        <i class="bi bi-trash"></i>
+                      </button>
                     </form>
                   </td>
                 </tr>
@@ -124,4 +133,32 @@
   transform: scale(1.05);
 }
 </style>
+
+<!-- SweetAlert2 para confirmar eliminación -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const formsEliminar = document.querySelectorAll('.eliminar-form');
+  formsEliminar.forEach(form => {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const nombre = form.querySelector('.btn-eliminar').dataset.nombre;
+
+      Swal.fire({
+        title: `¿Eliminar la moto "${nombre}"?`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Sí, eliminar",
+        cancelButtonText: "Cancelar",
+        background: "#fff",
+        color: "#000",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          form.submit();
+        }
+      });
+    });
+  });
+});
+</script>
+
 {% endblock %}

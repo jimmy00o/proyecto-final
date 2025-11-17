@@ -41,19 +41,23 @@ def accesologin():
         user = cur.fetchone()
         cur.close()
 
-        if user and pbkdf2_sha256.verify(password, user['password']):
-            session['logueado'] = True
-            session['id'] = user['id']
-            session['nombre'] = user.get('nombre', 'Usuario')
-            if user['id_rol'] == 1:
-                return redirect(url_for('admin'))
-            elif user['id_rol'] == 2:
-                return redirect(url_for('usuario'))
-        else:
-            flash('Usuario o contraseña incorrecta', 'danger')
-            return render_template('login.html')
-    else:
-        return render_template('login.html', mensaje="Credenciales incorrectas")
+        # 🔥 VERIFICACIÓN DE HASH SEGURA
+        try:
+            if user and pbkdf2_sha256.verify(password, user['password']):
+                session['logueado'] = True
+                session['id'] = user['id']
+                session['nombre'] = user.get('nombre', 'Usuario')
+                if user['id_rol'] == 1:
+                    return redirect(url_for('admin'))
+                elif user['id_rol'] == 2:
+                    return redirect(url_for('usuario'))
+        except:
+            pass
+
+        flash('Usuario o contraseña incorrecta', 'danger')
+        return render_template('login.html')
+    
+    return render_template('login.html', mensaje="Credenciales incorrectas")
 
 # ============================== REGISTRO NUEVO USUARIOS ===========================
 @app.route('/registro', methods=['GET', 'POST'])
@@ -64,6 +68,7 @@ def registro():
         password = request.form.get('password')
         id_rol = 2  # Usuario estándar
 
+        # 🔥 Encriptar contraseña
         password = pbkdf2_sha256.hash(password)
 
         cur = mysql.connection.cursor()
@@ -201,6 +206,7 @@ def lista_usuarios():
 
     return render_template('lista_usuarios.html', usuarios=usuarios)
 
+# 🔥 ARREGLADO → Ahora encripta y no provoca errores
 @app.route('/usuarios/nuevo', methods=['GET', 'POST'])
 def crear_usuario():
     if not session.get('logueado'):
@@ -217,6 +223,9 @@ def crear_usuario():
             flash('Todos los campos son obligatorios', 'warning')
             return redirect(url_for('crear_usuario'))
 
+        # 🔥 Encriptar contraseña
+        password = pbkdf2_sha256.hash(password)
+
         cur = mysql.connection.cursor()
         cur.execute(
             "INSERT INTO usuario (nombre, email, password, id_rol) VALUES (%s, %s, %s, %s)",
@@ -231,6 +240,7 @@ def crear_usuario():
     usuario = {'id': None, 'nombre': '', 'email': '', 'password': '', 'id_rol': 2}
     return render_template('usuario_form.html', usuario=usuario, modo='crear')
 
+# 🔥 ARREGLADO → Edita sin romper el hash
 @app.route('/usuarios/<int:uid>/editar', methods=['GET', 'POST'])
 def editar_usuario(uid):
     if not session.get('logueado'):
@@ -238,15 +248,25 @@ def editar_usuario(uid):
         return redirect(url_for('login'))
 
     cur = mysql.connection.cursor()
+    
     if request.method == 'POST':
         nombre = request.form.get('nombre', '').strip()
         email = request.form.get('email', '').strip()
         password = request.form.get('password', '').strip()
 
-        cur.execute(
-            "UPDATE usuario SET nombre=%s, email=%s, password=%s WHERE id=%s",
-            (nombre, email, password, uid)
-        )
+        # Si se escribió contraseña → encriptamos
+        if password:
+            password = pbkdf2_sha256.hash(password)
+            cur.execute(
+                "UPDATE usuario SET nombre=%s, email=%s, password=%s WHERE id=%s",
+                (nombre, email, password, uid)
+            )
+        else:
+            cur.execute(
+                "UPDATE usuario SET nombre=%s, email=%s WHERE id=%s",
+                (nombre, email, uid)
+            )
+
         mysql.connection.commit()
         cur.close()
 
@@ -319,13 +339,12 @@ def listar_productos_agregados():
         nombre = request.form.get('nombre', '').strip()
         precio = request.form.get('precio', '').strip()
         descripcion = request.form.get('descripcion', '').strip()
-        fecha_form = request.form.get('fecha', '').strip()  # <-- FECHA editable
+        fecha_form = request.form.get('fecha', '').strip()
 
         if not nombre or not precio or not fecha_form:
             flash('Nombre, precio y fecha son obligatorios', 'warning')
         else:
             try:
-                # Combina la fecha seleccionada con la hora actual automáticamente
                 fecha_actualizada = datetime.now()
                 fecha_final = datetime.combine(
                     datetime.strptime(fecha_form, '%Y-%m-%d').date(),
@@ -362,7 +381,7 @@ def editar_producto(pid):
         nombre = request.form.get('nombre', '').strip()
         precio = request.form.get('precio', '').strip()
         descripcion = request.form.get('descripcion', '').strip()
-        fecha_form = request.form.get('fecha', '').strip()  # <-- FECHA editable
+        fecha_form = request.form.get('fecha', '').strip()
 
         if not nombre or not precio or not fecha_form:
             flash('Nombre, precio y fecha son obligatorios', 'warning')
@@ -370,7 +389,6 @@ def editar_producto(pid):
             return redirect(url_for('editar_producto', pid=pid))
 
         try:
-            # Combina la fecha seleccionada con la hora actual automáticamente
             fecha_actualizada = datetime.now()
             fecha_final = datetime.combine(
                 datetime.strptime(fecha_form, '%Y-%m-%d').date(),
@@ -434,6 +452,39 @@ def eliminar_producto(pid):
         cur.close()
 
     return redirect(url_for('productos_listar'))
+
+# --------------------------------------------------------------------
+# ---------- NUEVO: EXPORTAR PRODUCTOS A CSV -------------------------
+# --------------------------------------------------------------------
+@app.route('/productos/exportar')
+def exportar_productos():
+    if not session.get('logueado'):
+        flash('Primero inicia sesión', 'warning')
+        return redirect(url_for('login'))
+
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT id, nombre, precio, descripcion, fecha FROM producto ORDER BY id DESC")
+    productos = cur.fetchall()
+    cur.close()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    writer.writerow(['ID', 'Nombre', 'Precio', 'Descripción', 'Fecha'])
+
+    for p in productos:
+        writer.writerow([
+            p['id'],
+            p['nombre'],
+            p['precio'],
+            p['descripcion'],
+            p['fecha']
+        ])
+
+    response = make_response(output.getvalue())
+    response.headers["Content-Disposition"] = "attachment; filename=productos.csv"
+    response.headers["Content-Type"] = "text/csv"
+    return response
 
 @app.route('/productos')
 def listar_productos():
