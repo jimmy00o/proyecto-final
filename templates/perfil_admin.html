@@ -111,13 +111,19 @@
   .users-bg{ background:linear-gradient(135deg, #86efac, #22c55e); }
   .prods-bg{ background:linear-gradient(135deg, #93c5fd, #3b82f6); }
 
-  /* Botón pill */
+  /* Botón pill (ajuste para que NO se “pierda” el texto) */
   .btn-pill{
-    border-radius:999px; font-weight:700;
+    border-radius:999px;
+    font-weight:700;
     background:linear-gradient(180deg, #fff, #e9eef6);
-    border:1px solid #dce3ef; color:#0f172a;
+    border:1px solid #dce3ef;
+    color:#0f172a !important;   /* forzamos color oscuro siempre */
   }
-  .btn-pill:hover{ background:#fff; border-color:#cbd5e1; }
+  .btn-pill:hover{
+    background:#fff;
+    border-color:#cbd5e1;
+    color:#0f172a !important;   /* evita que Bootstrap lo vuelva blanco */
+  }
 
   /* Paneles de listas con glow suave */
   .panel{
@@ -157,32 +163,64 @@
 
   <div class="container mt-4 position-relative" style="z-index:1;">
     <!-- Encabezado -->
-    <div class="p-4 rounded-4 shadow admin-header fade-in">
-      <span class="ribbon"><i class="bi bi-shield-lock-fill me-1"></i>ADMIN</span>
-      <h2 class="text-center mb-0">
+    <div class="p-4 rounded-4 shadow admin-header fade-in"
+         data-bs-toggle="tooltip"
+         title="Resumen general del rol y actividad del administrador.">
+
+      <span class="ribbon"
+            data-bs-toggle="tooltip"
+            title="Rol administrador con privilegios avanzados.">
+        <i class="bi bi-shield-lock-fill me-1"></i>ADMIN
+      </span>
+
+      <h2 class="text-center mb-0"
+          data-bs-toggle="tooltip"
+          title="Panel de control principal del administrador.">
         <i class="bi bi-lightning-charge-fill text-warning me-2"></i>
         Perfil del Administrador
       </h2>
-      <p class="text-center admin-sub mb-0">Bienvenido, {{ admin_nombre }}</p>
+
+      <p class="text-center admin-sub mb-0"
+         data-bs-toggle="tooltip"
+         title="Administrador actualmente autenticado en el sistema.">
+        Bienvenido, {{ admin_nombre }}
+      </p>
     </div>
 
     <!-- Métricas -->
     <div class="row g-4 mt-3">
       <!-- Usuarios -->
       <div class="col-md-6">
-        <div class="metric fade-in soft-glow">
+        <div class="metric fade-in soft-glow"
+             data-bs-toggle="tooltip"
+             title="Resumen de usuarios activos registrados en el sistema.">
           <div class="d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center gap-3">
-              <div class="icon users-bg"><i class="bi bi-people-fill fs-5"></i></div>
+              <div class="icon users-bg"
+                   data-bs-toggle="tooltip"
+                   title="Indicador de usuarios registrados.">
+                <i class="bi bi-people-fill fs-5"></i>
+              </div>
               <div>
-                <h4 class="mb-0">Usuarios Registrados</h4>
+                <h4 class="mb-0"
+                    data-bs-toggle="tooltip"
+                    title="Cantidad total de usuarios con cuenta registrada.">
+                  Usuarios Registrados
+                </h4>
                 <small class="desc">Cantidad total de cuentas creadas en el sistema.</small>
               </div>
             </div>
-            <div class="display-5 kpi">{{ total_usuarios }}</div>
+            <div class="display-5 kpi"
+                 data-bs-toggle="tooltip"
+                 title="Número actual de usuarios registrados.">
+              {{ total_usuarios }}
+            </div>
           </div>
           <div class="mt-3">
-            <a href="{{ url_for('lista_usuarios') }}" class="btn btn-pill">
+            <a href="{{ url_for('lista_usuarios') }}"
+               class="btn btn-pill"
+               data-bs-toggle="tooltip"
+               title="Ir al listado completo de usuarios.">
               <i class="bi bi-list-ul me-1"></i> Ver lista
             </a>
           </div>
@@ -191,19 +229,36 @@
 
       <!-- Productos -->
       <div class="col-md-6">
-        <div class="metric fade-in soft-glow">
+        <div class="metric fade-in soft-glow"
+             data-bs-toggle="tooltip"
+             title="Resumen de productos actualmente registrados.">
           <div class="d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center gap-3">
-              <div class="icon prods-bg"><i class="bi bi-box-seam fs-5"></i></div>
+              <div class="icon prods-bg"
+                   data-bs-toggle="tooltip"
+                   title="Indicador de productos registrados.">
+                <i class="bi bi-box-seam fs-5"></i>
+              </div>
               <div>
-                <h4 class="mb-0">Productos Registrados</h4>
+                <h4 class="mb-0"
+                    data-bs-toggle="tooltip"
+                    title="Cantidad total de productos en el catálogo.">
+                  Productos Registrados
+                </h4>
                 <small class="desc">Cantidad total de productos agregados.</small>
               </div>
             </div>
-            <div class="display-5 kpi">{{ total_productos }}</div>
+            <div class="display-5 kpi"
+                 data-bs-toggle="tooltip"
+                 title="Número actual de productos registrados.">
+              {{ total_productos }}
+            </div>
           </div>
           <div class="mt-3">
-            <a href="{{ url_for('productos_listar') }}" class="btn btn-pill">
+            <a href="{{ url_for('productos_listar') }}"
+               class="btn btn-pill"
+               data-bs-toggle="tooltip"
+               title="Ir al listado completo de productos.">
               <i class="bi bi-grid-3x3-gap-fill me-1"></i> Ver productos
             </a>
           </div>
@@ -215,16 +270,29 @@
     <div class="row g-4 mt-1">
       <!-- Últimos usuarios -->
       <div class="col-md-6">
-        <div class="rounded-4 shadow p-3 panel fade-in">
-          <h5 class="mb-3">
+        <div class="rounded-4 shadow p-3 panel fade-in"
+             data-bs-toggle="tooltip"
+             title="Usuarios creados o actualizados más recientemente.">
+          <h5 class="mb-3"
+              data-bs-toggle="tooltip"
+              title="Listado de los últimos usuarios registrados.">
             <i class="bi bi-person-lines-fill me-2 text-warning"></i>
             Últimos usuarios
           </h5>
           <ul class="list-group">
             {% for u in ult_usuarios %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-              <span><i class="bi bi-person-circle me-2 text-warning"></i>{{ u.nombre }} <small class="text-muted">({{ u.email }})</small></span>
-              <span class="badge">#{{ u.id }}</span>
+            <li class="list-group-item d-flex justify-content-between align-items-center"
+                data-bs-toggle="tooltip"
+                title="Usuario reciente registrado en el sistema.">
+              <span>
+                <i class="bi bi-person-circle me-2 text-warning"></i>{{ u.nombre }}
+                <small class="text-muted">({{ u.email }})</small>
+              </span>
+              <span class="badge"
+                    data-bs-toggle="tooltip"
+                    title="Identificador interno del usuario.">
+                #{{ u.id }}
+              </span>
             </li>
             {% else %}
             <li class="list-group-item">No hay usuarios aún</li>
@@ -235,16 +303,28 @@
 
       <!-- Últimos productos -->
       <div class="col-md-6">
-        <div class="rounded-4 shadow p-3 panel fade-in">
-          <h5 class="mb-3">
+        <div class="rounded-4 shadow p-3 panel fade-in"
+             data-bs-toggle="tooltip"
+             title="Productos agregados o actualizados recientemente.">
+          <h5 class="mb-3"
+              data-bs-toggle="tooltip"
+              title="Listado de los últimos productos registrados.">
             <i class="bi bi-bag-check-fill me-2 text-warning"></i>
             Últimos productos
           </h5>
           <ul class="list-group">
             {% for p in ult_productos %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-              <span><i class="bi bi-tag-fill me-2 text-warning"></i>{{ p.nombre }}</span>
-              <span class="badge">{{ p.precio }}</span>
+            <li class="list-group-item d-flex justify-content-between align-items-center"
+                data-bs-toggle="tooltip"
+                title="Producto reciente en el catálogo.">
+              <span>
+                <i class="bi bi-tag-fill me-2 text-warning"></i>{{ p.nombre }}
+              </span>
+              <span class="badge"
+                    data-bs-toggle="tooltip"
+                    title="Precio actual del producto.">
+                {{ p.precio }}
+              </span>
             </li>
             {% else %}
             <li class="list-group-item">No hay productos aún</li>
@@ -255,4 +335,30 @@
     </div>
   </div>
 </div>
+
+<!-- Script para activar tooltips (solo uno visible a la vez) -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const tooltipEls = Array.from(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    const tooltipInstances = tooltipEls.map(el => new bootstrap.Tooltip(el));
+
+    // Solo un tooltip visible al mismo tiempo
+    document.addEventListener('shown.bs.tooltip', function (event) {
+      tooltipInstances.forEach(instance => {
+        if (instance._element !== event.target) {
+          instance.hide();
+        }
+      });
+    });
+
+    // Ocultar tooltip al salir del elemento
+    tooltipEls.forEach(el => {
+      el.addEventListener('mouseleave', () => {
+        const inst = bootstrap.Tooltip.getInstance(el);
+        if (inst) inst.hide();
+      });
+    });
+  });
+</script>
+
 {% endblock %}

@@ -21,28 +21,60 @@
             <!-- Modelo -->
             <div class="mb-3">
               <label class="form-label fw-bold">Modelo de la Moto</label>
-              <input type="text" name="nombre" class="form-control" placeholder="Ej: Yamaha MT-09" required>
+              <input 
+                type="text" 
+                name="nombre" 
+                class="form-control" 
+                placeholder="Ej: Yamaha MT-09" 
+                required
+                data-bs-toggle="tooltip" 
+                title="Ingresa el nombre o modelo de la motocicleta">
             </div>
 
             <!-- Precio -->
             <div class="mb-3">
               <label class="form-label fw-bold">Precio ($)</label>
-              <input type="number" step="0.01" min="0" name="precio" class="form-control" placeholder="Ej: 12500.00" required>
+              <input 
+                type="number" 
+                step="0.01" 
+                min="0" 
+                name="precio" 
+                class="form-control" 
+                placeholder="Ej: 12500.00" 
+                required
+                data-bs-toggle="tooltip" 
+                title="Ingresa el precio en dólares">
             </div>
 
             <!-- Descripción -->
             <div class="mb-3">
               <label class="form-label fw-bold">Descripción</label>
-              <textarea name="descripcion" rows="3" class="form-control" placeholder="Ej: Motor 900cc, transmisión de 6 velocidades, frenos ABS."></textarea>
+              <textarea 
+                name="descripcion" 
+                rows="3" 
+                class="form-control" 
+                placeholder="Ej: Motor 900cc, transmisión de 6 velocidades, frenos ABS."
+                data-bs-toggle="tooltip" 
+                title="Descripción breve de las características de la moto"></textarea>
             </div>
 
             <!-- Fecha -->
             <div class="mb-3">
               <label class="form-label fw-bold">Fecha</label>
-              <input type="date" name="fecha" class="form-control" required>
+              <input 
+                type="date" 
+                name="fecha" 
+                class="form-control" 
+                required
+                data-bs-toggle="tooltip" 
+                title="Selecciona la fecha de registro">
             </div>
 
-            <button type="submit" class="btn btn-moto w-100">
+            <button 
+              type="submit" 
+              class="btn btn-moto w-100"
+              data-bs-toggle="tooltip" 
+              title="Guardar esta moto en el catálogo">
               🏍️ Registrar nueva moto
             </button>
           </form>
@@ -96,14 +128,31 @@
                   <td>{{ p.descripcion }}</td>
                   <td>{{ p.fecha if p.fecha else '—' }}</td>
                   <td>
-                    <a href="{{ url_for('editar_producto', pid=p.id) }}" class="btn btn-sm btn-success me-1">
+
+                    <!-- Botón Editar -->
+                    <a 
+                      href="{{ url_for('editar_producto', pid=p.id) }}" 
+                      class="btn btn-sm btn-success me-1"
+                      data-bs-toggle="tooltip" 
+                      title="Editar esta moto">
                       <i class="bi bi-pencil-square"></i>
                     </a>
-                    <form action="{{ url_for('eliminar_producto', pid=p.id) }}" method="post" class="d-inline eliminar-form">
-                      <button type="submit" class="btn btn-sm btn-danger btn-eliminar" data-nombre="{{ p.nombre }}">
+
+                    <!-- Botón Eliminar -->
+                    <form 
+                      action="{{ url_for('eliminar_producto', pid=p.id) }}" 
+                      method="post" 
+                      class="d-inline eliminar-form">
+                      <button 
+                        type="submit" 
+                        class="btn btn-sm btn-danger btn-eliminar"
+                        data-nombre="{{ p.nombre }}"
+                        data-bs-toggle="tooltip"
+                        title="Eliminar esta moto del catálogo">
                         <i class="bi bi-trash"></i>
                       </button>
                     </form>
+
                   </td>
                 </tr>
                 {% else %}
@@ -158,6 +207,13 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     });
   });
+
+  /* Inicializar todos los tooltips Bootstrap */
+  var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+  tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+    new bootstrap.Tooltip(tooltipTriggerEl);
+  });
+
 });
 </script>
 

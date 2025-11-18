@@ -47,7 +47,7 @@
       <label class="form-label fw-bold" data-bs-toggle="tooltip" title="Contraseña para acceder al sistema.">Password</label>
       <input type="text" name="password" class="form-control"
              value="{{ usuario.password or '' }}" required
-             data-bs-toggle="tooltip" title="Recomendado mínimo 8 caracteres.">
+             data-bs-toggle="tooltip" title="Debe contener mínimo 8 caracteres.">
     </div>
 
     <!-- Botones de acción -->
@@ -74,22 +74,26 @@
 <script>
   document.addEventListener('DOMContentLoaded', function () {
 
+    // Inicializa todos los tooltips
     const tooltipEls = Array.from(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     const tooltipInstances = tooltipEls.map(el => new bootstrap.Tooltip(el));
 
-    // ✅ Mostrar solo UN tooltip a la vez (igual que en tus demás pantallas)
-    document.addEventListener('shown.bs.tooltip', function (e) {
-      tooltipInstances.forEach(t => {
-        if (t._element !== e.target) t.hide();
+    // ===============  SOLO 1 TOOLTIP A LA VEZ (misma lógica que tus pantallas) ===============
+    document.addEventListener('shown.bs.tooltip', function (event) {
+      tooltipInstances.forEach(instance => {
+        if (instance._element !== event.target) {
+          instance.hide();
+        }
       });
     });
 
-    tooltipEls.forEach((el) => {
+    tooltipEls.forEach(el => {
       el.addEventListener('mouseenter', () => {
         tooltipInstances.forEach(t => {
           if (t._element !== el) t.hide();
         });
       });
+
       el.addEventListener('mouseleave', () => {
         const inst = bootstrap.Tooltip.getInstance(el);
         if (inst) inst.hide();
