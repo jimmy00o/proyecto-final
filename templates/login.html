@@ -86,10 +86,10 @@
 /* Fondo general con textura metálica */
 .login-bg {
   background: radial-gradient(circle at top, #1a1a1a 0%, #0d0d0d 100%);
-  background-image: url('{{ url_for("static", filename="inicio.png") }}');
+  background-image: url('{{ url_for("static", filename="fondo_moto.jpg") }}');
   background-size: cover;
   background-position: center;
-  background-blend-mode: overlay; 
+  background-blend-mode: overlay;
 }
 
 /* Tarjeta principal */
@@ -145,6 +145,9 @@
   transform: scale(1.03);
   box-shadow: 0 0 15px rgba(255, 68, 0, 0.6);
 }
+.btn-login:active {
+  transform: scale(0.97);
+}
 
 /* Botón Registrarse */
 .btn-register {
@@ -173,8 +176,12 @@
   height: 1px;
   background-color: #444;
 }
-.separator::before { left: 0; }
-.separator::after { right: 0; }
+.separator::before {
+  left: 0;
+}
+.separator::after {
+  right: 0;
+}
 
 /* Tooltip personalizado */
 .tooltip-inner {
