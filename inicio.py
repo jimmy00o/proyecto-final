@@ -317,7 +317,7 @@ def crear_usuario():
     return render_template('usuario_form.html', usuario=usuario, modo='crear')
 
 
-# ==================== EDITAR USUARIO ============================
+# ==================== EDITAR USUARIO (CORRECCIÓN AÑADIDA) ============================
 @app.route('/usuarios/<int:uid>/editar', methods=['GET', 'POST'])
 def editar_usuario(uid):
     if not session.get('logueado'):
@@ -332,7 +332,16 @@ def editar_usuario(uid):
         cur = mysql.connection.cursor()
 
         try:
-            # No validar correo repetido aquí (solo si quieres lo agrego)
+            # 🚨 Validación: correo único excepto el del mismo usuario
+            cur.execute("SELECT id FROM usuario WHERE email=%s AND id!=%s", (email, uid))
+            repetido = cur.fetchone()
+
+            if repetido:
+                cur.close()
+                flash("Ese correo ya está en uso por otro usuario.", "danger")
+                return redirect(url_for('editar_usuario', uid=uid))
+
+            # Si cambia password
             if password:
                 password = pbkdf2_sha256.hash(password)
                 cur.execute(
