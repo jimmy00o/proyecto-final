@@ -25,14 +25,25 @@
           <textarea name="descripcion" rows="3" class="form-control" data-bs-toggle="tooltip" title="Puedes incluir características, modelo, detalles, etc.">{{ producto.descripcion }}</textarea>
         </div>
 
-        <!-- NUEVO CAMPO DE FECHA -->
+        <!-- CAMPO DE FECHA -->
         <div class="mb-3">
           <label class="form-label" data-bs-toggle="tooltip" title="Fecha de registro o actualización del producto.">Fecha</label>
-          <input type="date" name="fecha" class="form-control" required value="{{ producto.fecha }}" data-bs-toggle="tooltip" title="Selecciona la fecha del producto.">
+          <input 
+            type="date" 
+            name="fecha" 
+            class="form-control" 
+            required 
+            value="{{ producto.fecha.strftime('%Y-%m-%d') if producto.fecha else '' }}" 
+            data-bs-toggle="tooltip" 
+            title="Selecciona la fecha del producto.">
         </div>
 
-        <button type="submit" class="btn btn-primary" data-bs-toggle="tooltip" title="Guardar los cambios realizados al producto.">Guardar cambios</button>
-        <a href="{{ url_for('productos_listar') }}" class="btn btn-secondary" data-bs-toggle="tooltip" title="Volver a la lista sin guardar.">Cancelar</a>
+        <button type="submit" class="btn btn-primary" data-bs-toggle="tooltip" title="Guardar los cambios realizados al producto.">
+          Guardar cambios
+        </button>
+        <a href="{{ url_for('productos_listar') }}" class="btn btn-secondary" data-bs-toggle="tooltip" title="Volver a la lista sin guardar.">
+          Cancelar
+        </a>
 
       </form>
     </div>
@@ -42,6 +53,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
+  // ===== Tooltips Bootstrap =====
   const tooltipEls = Array.from(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
   const tooltipInstances = tooltipEls.map(el => new bootstrap.Tooltip(el));
 
@@ -62,6 +74,35 @@ document.addEventListener('DOMContentLoaded', function () {
       if (inst) inst.hide();
     });
   });
+
+  // ===== VALIDACIÓN DE FECHA FUTURA CON SWEETALERT2 =====
+  const form = document.querySelector('form');
+  const campoFecha = document.querySelector('input[name="fecha"]');
+
+  if (form && campoFecha) {
+    form.addEventListener('submit', function (e) {
+      const valor = campoFecha.value;
+      if (!valor) return; // por si acaso
+
+      const fechaSeleccionada = new Date(valor);
+      const hoy = new Date();
+      // Normalizamos para comparar solo fecha (sin hora)
+      hoy.setHours(0, 0, 0, 0);
+      fechaSeleccionada.setHours(0, 0, 0, 0);
+
+      if (fechaSeleccionada > hoy) {
+        e.preventDefault();
+
+        Swal.fire({
+          icon: 'warning',
+          title: 'Fecha no válida',
+          text: 'No se pueden registrar fechas futuras',
+          confirmButtonText: 'Aceptar',
+          confirmButtonColor: '#d33'
+        });
+      }
+    });
+  }
 
 });
 </script>

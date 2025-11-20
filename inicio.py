@@ -247,32 +247,37 @@ def editar_usuario(uid):
         flash('Primero inicia sesión', 'warning')
         return redirect(url_for('login'))
 
-    cur = mysql.connection.cursor()
-    
     if request.method == 'POST':
         nombre = request.form.get('nombre', '').strip()
         email = request.form.get('email', '').strip()
         password = request.form.get('password', '').strip()
 
-        # Si se escribió contraseña → encriptamos
-        if password:
-            password = pbkdf2_sha256.hash(password)
-            cur.execute(
-                "UPDATE usuario SET nombre=%s, email=%s, password=%s WHERE id=%s",
-                (nombre, email, password, uid)
-            )
-        else:
-            cur.execute(
-                "UPDATE usuario SET nombre=%s, email=%s WHERE id=%s",
-                (nombre, email, uid)
-            )
+        cur = mysql.connection.cursor()
+        try:
+            # Si se escribió contraseña → encriptamos
+            if password:
+                password = pbkdf2_sha256.hash(password)
+                cur.execute(
+                    "UPDATE usuario SET nombre=%s, email=%s, password=%s WHERE id=%s",
+                    (nombre, email, password, uid)
+                )
+            else:
+                cur.execute(
+                    "UPDATE usuario SET nombre=%s, email=%s WHERE id=%s",
+                    (nombre, email, uid)
+                )
 
-        mysql.connection.commit()
-        cur.close()
+            mysql.connection.commit()
+            flash('Usuario actualizado correctamente', 'success')
+        except Exception as e:
+            mysql.connection.rollback()
+            flash(f'No se pudo actualizar: {e}', 'danger')
+        finally:
+            cur.close()
 
-        flash('Usuario actualizado correctamente', 'success')
         return redirect(url_for('lista_usuarios'))
 
+    cur = mysql.connection.cursor()
     cur.execute("SELECT id, nombre, email, password FROM usuario WHERE id=%s", (uid,))
     usuario = cur.fetchone()
     cur.close()
@@ -333,8 +338,7 @@ def listar_productos_agregados():
         flash('Primero inicia sesión', 'warning')
         return redirect(url_for('login'))
 
-    cur = mysql.connection.cursor()
-
+    # 🚩 Manejo de alta de productos
     if request.method == 'POST':
         nombre = request.form.get('nombre', '').strip()
         precio = request.form.get('precio', '').strip()
@@ -344,25 +348,35 @@ def listar_productos_agregados():
         if not nombre or not precio or not fecha_form:
             flash('Nombre, precio y fecha son obligatorios', 'warning')
         else:
+            cur = mysql.connection.cursor()
             try:
-                fecha_actualizada = datetime.now()
-                fecha_final = datetime.combine(
-                    datetime.strptime(fecha_form, '%Y-%m-%d').date(),
-                    fecha_actualizada.time()
-                )
+                # 🔥 Validar que la fecha NO sea futura
+                fecha_ingresada = datetime.strptime(fecha_form, '%Y-%m-%d').date()
+                hoy = datetime.now().date()
 
-                cur.execute(
-                    "INSERT INTO producto (nombre, precio, descripcion, fecha) VALUES (%s, %s, %s, %s)",
-                    (nombre, precio, descripcion, fecha_final)
-                )
-                mysql.connection.commit()
-                flash('Producto agregado correctamente', 'success')
-                cur.close()
-                return redirect(url_for('listar_productos_agregados'))
+                if fecha_ingresada > hoy:
+                    # Fecha futura → no permitimos guardar
+                    flash('No se pueden registrar fechas futuras', 'warning')
+                else:
+                    # Combinar la fecha ingresada con la hora actual
+                    fecha_actualizada = datetime.now()
+                    fecha_final = datetime.combine(fecha_ingresada, fecha_actualizada.time())
+
+                    cur.execute(
+                        "INSERT INTO producto (nombre, precio, descripcion, fecha) VALUES (%s, %s, %s, %s)",
+                        (nombre, precio, descripcion, fecha_final)
+                    )
+                    mysql.connection.commit()
+                    flash('Producto agregado correctamente', 'success')
+                    return redirect(url_for('listar_productos_agregados'))
             except Exception as e:
                 mysql.connection.rollback()
                 flash(f'Error al agregar producto: {e}', 'danger')
+            finally:
+                cur.close()
 
+    # Listado de productos (GET o después de POST con error/fecha futura)
+    cur = mysql.connection.cursor()
     cur.execute("SELECT id, nombre, precio, descripcion, fecha FROM producto ORDER BY id")
     productos = cur.fetchall()
     cur.close()
@@ -375,8 +389,6 @@ def editar_producto(pid):
         flash('Primero inicia sesión', 'warning')
         return redirect(url_for('login'))
 
-    cur = mysql.connection.cursor()
-
     if request.method == 'POST':
         nombre = request.form.get('nombre', '').strip()
         precio = request.form.get('precio', '').strip()
@@ -385,15 +397,20 @@ def editar_producto(pid):
 
         if not nombre or not precio or not fecha_form:
             flash('Nombre, precio y fecha son obligatorios', 'warning')
-            cur.close()
             return redirect(url_for('editar_producto', pid=pid))
 
+        cur = mysql.connection.cursor()
         try:
+            # 🔥 Validar que la fecha NO sea futura
+            fecha_ingresada = datetime.strptime(fecha_form, '%Y-%m-%d').date()
+            hoy = datetime.now().date()
+
+            if fecha_ingresada > hoy:
+                flash('No se pueden registrar fechas futuras', 'warning')
+                return redirect(url_for('editar_producto', pid=pid))
+
             fecha_actualizada = datetime.now()
-            fecha_final = datetime.combine(
-                datetime.strptime(fecha_form, '%Y-%m-%d').date(),
-                fecha_actualizada.time()
-            )
+            fecha_final = datetime.combine(fecha_ingresada, fecha_actualizada.time())
 
             cur.execute("""
                 UPDATE producto
@@ -411,6 +428,8 @@ def editar_producto(pid):
 
         return redirect(url_for('productos_listar'))
 
+    # GET → mostrar datos actuales
+    cur = mysql.connection.cursor()
     cur.execute("SELECT id, nombre, precio, descripcion, fecha FROM producto WHERE id=%s", (pid,))
     producto = cur.fetchone()
     cur.close()
