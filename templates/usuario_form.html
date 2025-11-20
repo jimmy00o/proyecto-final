@@ -3,97 +3,94 @@
 {% block title %}{{ 'Nuevo Usuario' if modo == 'crear' else 'Editar Usuario' }}{% endblock %}
 
 {% block body %}
-<!-- Contenedor principal centrado y con ancho limitado -->
 <div class="container mt-4" style="max-width: 720px;">
 
-  <!-- Título cambia según si se crea o se edita -->
-  <h2 class="mb-3" data-bs-toggle="tooltip" title="Administración de usuarios del sistema">
+  <h2 class="mb-3">
     {{ 'Nuevo Usuario' if modo == 'crear' else 'Editar Usuario' }}
   </h2>
 
-  <!-- Mensajes flash (ej: éxito o error) -->
+  <!-- 🔥 ALERTA ESTILO PRODUCTOS (SweetAlert2 Toast) -->
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       {% for category, message in messages %}
-      <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
-      </div>
+        <script>
+          document.addEventListener('DOMContentLoaded', function() {
+            const Toast = Swal.mixin({
+              toast: true,
+              position: 'top-end',
+              showConfirmButton: false,
+              timer: 2000,
+              timerProgressBar: true,
+              didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
+              }
+            });
+
+            Toast.fire({
+              icon: '{{ category }}',
+              title: '{{ message }}'
+            });
+          });
+        </script>
       {% endfor %}
     {% endif %}
   {% endwith %}
 
-  <!-- Formulario para crear/editar usuario -->
   <form method="post" class="card p-3 shadow-sm">
-    
-    <!-- Campo: Nombre -->
+
+    <!-- Nombre -->
     <div class="mb-3">
-      <label class="form-label fw-bold" data-bs-toggle="tooltip" title="Introduce el nombre completo del usuario.">Nombre</label>
+      <label class="form-label fw-bold">Nombre</label>
       <input type="text" name="nombre" class="form-control"
              value="{{ usuario.nombre or '' }}" required
              data-bs-toggle="tooltip" title="Ejemplo: Carlos Martínez">
     </div>
 
-    <!-- Campo: Correo -->
+    <!-- Correo -->
     <div class="mb-3">
-      <label class="form-label fw-bold" data-bs-toggle="tooltip" title="Correo electrónico único para iniciar sesión.">Correo</label>
+      <label class="form-label fw-bold">Correo</label>
       <input type="email" name="email" class="form-control"
              value="{{ usuario.email or '' }}" required
              data-bs-toggle="tooltip" title="Ejemplo: usuario@empresa.com">
     </div>
 
-    <!-- Campo: Password -->
+    <!-- Password -->
     <div class="mb-3">
-      <label class="form-label fw-bold" data-bs-toggle="tooltip" title="Contraseña para acceder al sistema.">Password</label>
+      <label class="form-label fw-bold">Password</label>
       <input type="text" name="password" class="form-control"
              value="{{ usuario.password or '' }}" required
              data-bs-toggle="tooltip" title="Debe contener mínimo 8 caracteres.">
     </div>
 
-    <!-- Botones de acción -->
+    <!-- Botones -->
     <div class="d-flex gap-2">
-
-      <!-- Botón principal con tooltip -->
-      <button class="btn btn-primary" type="submit" 
-              data-bs-toggle="tooltip" data-bs-placement="top" 
-              title="{{ 'Crear un nuevo usuario' if modo == 'crear' else 'Guardar los cambios realizados' }}">
+      <button class="btn btn-primary" type="submit">
         {{ 'Crear' if modo == 'crear' else 'Guardar Cambios' }}
       </button>
 
-      <!-- Botón cancelar con tooltip -->
-      <a class="btn btn-secondary" href="{{ url_for('lista_usuarios') }}"
-         data-bs-toggle="tooltip" data-bs-placement="top"
-         title="Cancelar y volver a la lista de usuarios">
+      <a class="btn btn-secondary" href="{{ url_for('lista_usuarios') }}">
         Cancelar
       </a>
     </div>
+
   </form>
 </div>
 
-<!-- Script para activar los tooltips de Bootstrap -->
+<!-- Script para activar tooltips -->
 <script>
   document.addEventListener('DOMContentLoaded', function () {
 
-    // Inicializa todos los tooltips
-    const tooltipEls = Array.from(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    const tooltipEls = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     const tooltipInstances = tooltipEls.map(el => new bootstrap.Tooltip(el));
 
-    // ===============  SOLO 1 TOOLTIP A LA VEZ (misma lógica que tus pantallas) ===============
     document.addEventListener('shown.bs.tooltip', function (event) {
       tooltipInstances.forEach(instance => {
-        if (instance._element !== event.target) {
-          instance.hide();
-        }
+        if (instance._element !== event.target) instance.hide();
       });
     });
 
     tooltipEls.forEach(el => {
-      el.addEventListener('mouseenter', () => {
-        tooltipInstances.forEach(t => {
-          if (t._element !== el) t.hide();
-        });
-      });
-
       el.addEventListener('mouseleave', () => {
         const inst = bootstrap.Tooltip.getInstance(el);
         if (inst) inst.hide();

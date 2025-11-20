@@ -111,18 +111,18 @@
   .users-bg{ background:linear-gradient(135deg, #86efac, #22c55e); }
   .prods-bg{ background:linear-gradient(135deg, #93c5fd, #3b82f6); }
 
-  /* Botón pill (ajuste para que NO se “pierda” el texto) */
+  /* Botón pill */
   .btn-pill{
     border-radius:999px;
     font-weight:700;
     background:linear-gradient(180deg, #fff, #e9eef6);
     border:1px solid #dce3ef;
-    color:#0f172a !important;   /* forzamos color oscuro siempre */
+    color:#0f172a !important;
   }
   .btn-pill:hover{
     background:#fff;
     border-color:#cbd5e1;
-    color:#0f172a !important;   /* evita que Bootstrap lo vuelva blanco */
+    color:#0f172a !important;
   }
 
   /* Paneles de listas con glow suave */
@@ -145,8 +145,53 @@
   .fade-in{ animation:fadeIn .7s ease; }
   @keyframes fadeIn{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
 
-  /* Micro-decor en métricas */
   .soft-glow{ box-shadow: 0 0 42px rgba(255,122,24,.18); }
+
+  /* ====== AVATAR / FOTO DE PERFIL MEJORADO ====== */
+  .admin-profile-row{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:1rem;
+    margin-top:2rem;
+  }
+  .avatar-ring{
+    width:170px;      /* MÁS GRANDE */
+    height:170px;
+    border-radius:50%;
+    padding:4px;
+    background:conic-gradient(from 180deg, var(--accent), var(--accent2), var(--info), var(--accent));
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 0 36px rgba(255,122,24,.55);
+  }
+  .avatar-ring-inner{
+    width:100%;
+    height:100%;
+    border-radius:50%;
+    overflow:hidden;
+    background:#111827;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .avatar-ring-inner img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+  }
+  .avatar-placeholder-icon{
+    font-size:3rem;
+    color:#e5e7eb;
+  }
+  .profile-text-block{
+    text-align:center;
+  }
+  .profile-text-block small{
+    color:var(--muted);
+  }
 </style>
 
 <div class="admin-stage">
@@ -185,6 +230,43 @@
          title="Administrador actualmente autenticado en el sistema.">
         Bienvenido, {{ admin_nombre }}
       </p>
+
+      <!-- ====== BLOQUE: FOTO DE PERFIL ====== -->
+      <div class="admin-profile-row">
+        <div class="avatar-ring"
+             data-bs-toggle="tooltip"
+             title="Foto de perfil del administrador.">
+          <div class="avatar-ring-inner">
+            <img src="{{ url_for('static', filename='img/admin_avatar.png') }}"
+                 alt="Foto de perfil"
+                 onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=&quot;bi bi-person-fill avatar-placeholder-icon&quot;></i>';">
+          </div>
+        </div>
+
+        <div class="profile-text-block">
+          <h5 class="mb-1">Foto de perfil</h5>
+          <small>Personaliza tu panel agregando una imagen representativa del administrador.</small>
+
+          <!-- Formulario que sube la foto a /perfil/foto -->
+          <form method="post"
+                action="{{ url_for('subir_foto_perfil') }}"
+                enctype="multipart/form-data"
+                class="mt-2">
+            <label class="btn btn-pill btn-sm mb-0"
+                   data-bs-toggle="tooltip"
+                   title="Seleccionar una nueva imagen desde tu equipo.">
+              <i class="bi bi-upload me-1"></i> Cambiar foto
+              <input type="file"
+                     name="avatar"
+                     accept="image/*"
+                     class="d-none"
+                     onchange="this.form.submit();">
+            </label>
+          </form>
+        </div>
+      </div>
+      <!-- ====== FIN BLOQUE FOTO DE PERFIL ====== -->
+
     </div>
 
     <!-- Métricas -->
@@ -342,7 +424,6 @@
     const tooltipEls = Array.from(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     const tooltipInstances = tooltipEls.map(el => new bootstrap.Tooltip(el));
 
-    // Solo un tooltip visible al mismo tiempo
     document.addEventListener('shown.bs.tooltip', function (event) {
       tooltipInstances.forEach(instance => {
         if (instance._element !== event.target) {
@@ -351,7 +432,6 @@
       });
     });
 
-    // Ocultar tooltip al salir del elemento
     tooltipEls.forEach(el => {
       el.addEventListener('mouseleave', () => {
         const inst = bootstrap.Tooltip.getInstance(el);

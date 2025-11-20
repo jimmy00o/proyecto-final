@@ -5,6 +5,8 @@ from passlib.hash import pbkdf2_sha256
 import csv
 import io
 from datetime import datetime
+import os                           
+from werkzeug.utils import secure_filename  
 
 # Crea la aplicación Flask
 app = Flask(__name__)
@@ -25,6 +27,12 @@ app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 
 mysql.init_app(app)
 
+# ---------------------- CONFIG SUBIDA FOTO PERFIL ADMIN (NUEVO) ------------
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+def allowed_file(filename: str) -> bool:
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 # ============================== RUTAS PÚBLICAS ==============================
 @app.route('/')
 def inicio():
@@ -41,12 +49,12 @@ def accesologin():
         user = cur.fetchone()
         cur.close()
 
-        # 🔥 VERIFICACIÓN DE HASH SEGURA
         try:
             if user and pbkdf2_sha256.verify(password, user['password']):
                 session['logueado'] = True
                 session['id'] = user['id']
                 session['nombre'] = user.get('nombre', 'Usuario')
+
                 if user['id_rol'] == 1:
                     return redirect(url_for('admin'))
                 elif user['id_rol'] == 2:
@@ -59,19 +67,29 @@ def accesologin():
     
     return render_template('login.html', mensaje="Credenciales incorrectas")
 
-# ============================== REGISTRO NUEVO USUARIOS ===========================
+
+# ============================== REGISTRO DE USUARIOS ========================
 @app.route('/registro', methods=['GET', 'POST'])
 def registro():
     if request.method == 'POST':
         nombre = request.form.get('nombre')
         email = request.form.get('email')
         password = request.form.get('password')
-        id_rol = 2  # Usuario estándar
+        id_rol = 2
 
-        # 🔥 Encriptar contraseña
+        # 🚨 VALIDACIÓN: Verificar si el correo ya existe
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT id FROM usuario WHERE email=%s", (email,))
+        existe = cur.fetchone()
+
+        if existe:
+            cur.close()
+            flash("El correo ya está registrado, usa otro.", "danger")
+            return redirect(url_for('registro'))
+
+        # Encriptación
         password = pbkdf2_sha256.hash(password)
 
-        cur = mysql.connection.cursor()
         cur.execute(
             "INSERT INTO usuario (email, nombre, password, id_rol) VALUES (%s, %s, %s, %s)",
             (email, nombre, password, id_rol)
@@ -83,7 +101,8 @@ def registro():
 
     return render_template("registro.html")
 
-# =============================== FORMULARIOS DEMO ===========================
+
+# =============================== DEMOS FORMULARIO ===========================
 @app.route('/contacto', methods=['GET', 'POST'])
 def contacto():
     user = {'nombre': '', 'email': '', 'mensaje': ''}
@@ -102,10 +121,12 @@ def contactopost():
         user['mensaje'] = request.form.get('mensaje', '')
     return render_template("contactopost.html", usuario=user)
 
+
 # ============================ RUTAS DE AUTENTICACIÓN ========================
 @app.route('/login')
 def login():
     return render_template("login.html")
+
 
 # ============================ PANEL ADMIN =====================
 @app.route('/admin')
@@ -136,6 +157,7 @@ def admin():
         ult_productos=ult_productos
     )
 
+
 @app.route('/usuario')
 def usuario():
     if not session.get('logueado'):
@@ -143,15 +165,18 @@ def usuario():
         return redirect(url_for('login'))
     return render_template("usuario.html")
 
+
 @app.route('/acercade')
 def acercade():
     return render_template("acercade.html")
+
 
 @app.route('/logout')
 def logout():
     session.clear()
     flash('Sesión cerrada correctamente', 'success')
     return redirect(url_for('login'))
+
 
 # ============================== PERFIL ADMIN ===============================
 @app.route('/perfil')
@@ -163,9 +188,10 @@ def perfil_admin():
     cur = mysql.connection.cursor()
     cur.execute("SELECT id_rol, nombre FROM usuario WHERE id=%s", (session.get('id'),))
     me = cur.fetchone()
+
     if not me or me.get('id_rol') != 1:
         cur.close()
-        flash('No tienes permisos para ver el perfil de administrador', 'danger')
+        flash('No tienes permisos', 'danger')
         return redirect(url_for('usuario'))
 
     cur.execute("SELECT COUNT(*) AS total FROM usuario")
@@ -190,8 +216,49 @@ def perfil_admin():
         ult_productos=ult_productos
     )
 
+
+# ---------------------- SUBIDA FOTO PERFIL ADMIN ---------------------------
+@app.route('/perfil/foto', methods=['POST'])
+def subir_foto_perfil():
+    if not session.get('logueado'):
+        flash('Primero inicia sesión', 'warning')
+        return redirect(url_for('login'))
+
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT id_rol FROM usuario WHERE id=%s", (session.get('id'),))
+    me = cur.fetchone()
+    cur.close()
+
+    if not me or me.get('id_rol') != 1:
+        flash('No tienes permisos', 'danger')
+        return redirect(url_for('perfil_admin'))
+
+    file = request.files.get('avatar')
+
+    if not file or file.filename == '':
+        flash('No se seleccionó ningún archivo', 'warning')
+        return redirect(url_for('perfil_admin'))
+
+    if not allowed_file(file.filename):
+        flash('Formato no permitido', 'warning')
+        return redirect(url_for('perfil_admin'))
+
+    avatar_filename = 'admin_avatar.png'
+    avatar_folder = os.path.join(app.root_path, 'static', 'img')
+    os.makedirs(avatar_folder, exist_ok=True)
+    avatar_path = os.path.join(avatar_folder, avatar_filename)
+
+    try:
+        file.save(avatar_path)
+        flash('Foto actualizada', 'success')
+    except Exception as e:
+        flash(f'Error: {e}', 'danger')
+
+    return redirect(url_for('perfil_admin'))
+
+
 # ====================================================================
-# ======================= CRUD DE USUARIOS ===========================
+# ======================= CRUD USUARIOS ===============================
 # ====================================================================
 @app.route('/usuarios')
 def lista_usuarios():
@@ -206,7 +273,8 @@ def lista_usuarios():
 
     return render_template('lista_usuarios.html', usuarios=usuarios)
 
-# 🔥 ARREGLADO → Ahora encripta y no provoca errores
+
+# ---------------------- CREAR USUARIO (ADMIN) -----------------------------
 @app.route('/usuarios/nuevo', methods=['GET', 'POST'])
 def crear_usuario():
     if not session.get('logueado'):
@@ -223,10 +291,18 @@ def crear_usuario():
             flash('Todos los campos son obligatorios', 'warning')
             return redirect(url_for('crear_usuario'))
 
-        # 🔥 Encriptar contraseña
+        # 🚨 VALIDACIÓN: evitar correos repetidos
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT id FROM usuario WHERE email=%s", (email,))
+        existe = cur.fetchone()
+
+        if existe:
+            cur.close()
+            flash("Ese correo ya existe.", "danger")
+            return redirect(url_for('crear_usuario'))
+
         password = pbkdf2_sha256.hash(password)
 
-        cur = mysql.connection.cursor()
         cur.execute(
             "INSERT INTO usuario (nombre, email, password, id_rol) VALUES (%s, %s, %s, %s)",
             (nombre, email, password, id_rol)
@@ -240,7 +316,8 @@ def crear_usuario():
     usuario = {'id': None, 'nombre': '', 'email': '', 'password': '', 'id_rol': 2}
     return render_template('usuario_form.html', usuario=usuario, modo='crear')
 
-# 🔥 ARREGLADO → Edita sin romper el hash
+
+# ==================== EDITAR USUARIO ============================
 @app.route('/usuarios/<int:uid>/editar', methods=['GET', 'POST'])
 def editar_usuario(uid):
     if not session.get('logueado'):
@@ -253,8 +330,9 @@ def editar_usuario(uid):
         password = request.form.get('password', '').strip()
 
         cur = mysql.connection.cursor()
+
         try:
-            # Si se escribió contraseña → encriptamos
+            # No validar correo repetido aquí (solo si quieres lo agrego)
             if password:
                 password = pbkdf2_sha256.hash(password)
                 cur.execute(
@@ -269,6 +347,7 @@ def editar_usuario(uid):
 
             mysql.connection.commit()
             flash('Usuario actualizado correctamente', 'success')
+
         except Exception as e:
             mysql.connection.rollback()
             flash(f'No se pudo actualizar: {e}', 'danger')
@@ -288,6 +367,8 @@ def editar_usuario(uid):
 
     return render_template('usuario_form.html', usuario=usuario, modo='editar')
 
+
+# ========================== ELIMINAR USUARIO ==============================
 @app.route('/usuarios/<int:uid>/eliminar', methods=['POST'])
 def eliminar_usuario(uid):
     if not session.get('logueado'):
@@ -307,6 +388,8 @@ def eliminar_usuario(uid):
 
     return redirect(url_for('lista_usuarios'))
 
+
+# ========================= EXPORTAR USUARIOS ==============================
 @app.route('/usuarios/exportar')
 def exportar_usuarios():
     if not session.get('logueado'):
@@ -321,6 +404,7 @@ def exportar_usuarios():
     output = io.StringIO()
     writer = csv.writer(output)
     writer.writerow(['ID', 'Nombre', 'Correo'])
+
     for u in usuarios:
         writer.writerow([u['id'], u['nombre'], u['email']])
 
@@ -329,8 +413,9 @@ def exportar_usuarios():
     response.headers["Content-Type"] = "text/csv"
     return response
 
+
 # ====================================================================
-# =================== PRODUCTOS (CRUD) ================================
+# ========================= PRODUCTOS CRUD ===========================
 # ====================================================================
 @app.route('/productos/agregar', methods=['GET', 'POST'])
 def listar_productos_agregados():
@@ -338,7 +423,6 @@ def listar_productos_agregados():
         flash('Primero inicia sesión', 'warning')
         return redirect(url_for('login'))
 
-    # 🚩 Manejo de alta de productos
     if request.method == 'POST':
         nombre = request.form.get('nombre', '').strip()
         precio = request.form.get('precio', '').strip()
@@ -350,15 +434,12 @@ def listar_productos_agregados():
         else:
             cur = mysql.connection.cursor()
             try:
-                # 🔥 Validar que la fecha NO sea futura
                 fecha_ingresada = datetime.strptime(fecha_form, '%Y-%m-%d').date()
                 hoy = datetime.now().date()
 
                 if fecha_ingresada > hoy:
-                    # Fecha futura → no permitimos guardar
                     flash('No se pueden registrar fechas futuras', 'warning')
                 else:
-                    # Combinar la fecha ingresada con la hora actual
                     fecha_actualizada = datetime.now()
                     fecha_final = datetime.combine(fecha_ingresada, fecha_actualizada.time())
 
@@ -375,13 +456,13 @@ def listar_productos_agregados():
             finally:
                 cur.close()
 
-    # Listado de productos (GET o después de POST con error/fecha futura)
     cur = mysql.connection.cursor()
     cur.execute("SELECT id, nombre, precio, descripcion, fecha FROM producto ORDER BY id")
     productos = cur.fetchall()
     cur.close()
 
     return render_template('productos_agregar.html', productos=productos)
+
 
 @app.route('/productos/<int:pid>/editar', methods=['GET', 'POST'])
 def editar_producto(pid):
@@ -396,12 +477,11 @@ def editar_producto(pid):
         fecha_form = request.form.get('fecha', '').strip()
 
         if not nombre or not precio or not fecha_form:
-            flash('Nombre, precio y fecha son obligatorios', 'warning')
+            flash('Todos los campos son obligatorios', 'warning')
             return redirect(url_for('editar_producto', pid=pid))
 
         cur = mysql.connection.cursor()
         try:
-            # 🔥 Validar que la fecha NO sea futura
             fecha_ingresada = datetime.strptime(fecha_form, '%Y-%m-%d').date()
             hoy = datetime.now().date()
 
@@ -420,6 +500,7 @@ def editar_producto(pid):
             
             mysql.connection.commit()
             flash('Producto actualizado correctamente', 'success')
+
         except Exception as e:
             mysql.connection.rollback()
             flash(f'No se pudo actualizar: {e}', 'danger')
@@ -428,7 +509,6 @@ def editar_producto(pid):
 
         return redirect(url_for('productos_listar'))
 
-    # GET → mostrar datos actuales
     cur = mysql.connection.cursor()
     cur.execute("SELECT id, nombre, precio, descripcion, fecha FROM producto WHERE id=%s", (pid,))
     producto = cur.fetchone()
@@ -439,6 +519,7 @@ def editar_producto(pid):
         return redirect(url_for('productos_listar'))
 
     return render_template('productos_form.html', producto=producto, modo='editar')
+
 
 @app.route('/productos/listar')
 def productos_listar():
@@ -452,6 +533,7 @@ def productos_listar():
     cur.close()
 
     return render_template('productos_listar.html', productos=productos)
+
 
 @app.route('/productos/<int:pid>/eliminar', methods=['POST'])
 def eliminar_producto(pid):
@@ -472,9 +554,8 @@ def eliminar_producto(pid):
 
     return redirect(url_for('productos_listar'))
 
-# --------------------------------------------------------------------
-# ---------- NUEVO: EXPORTAR PRODUCTOS A CSV -------------------------
-# --------------------------------------------------------------------
+
+# ========================= EXPORTAR PRODUCTOS ==============================
 @app.route('/productos/exportar')
 def exportar_productos():
     if not session.get('logueado'):
@@ -488,7 +569,6 @@ def exportar_productos():
 
     output = io.StringIO()
     writer = csv.writer(output)
-
     writer.writerow(['ID', 'Nombre', 'Precio', 'Descripción', 'Fecha'])
 
     for p in productos:
@@ -505,10 +585,12 @@ def exportar_productos():
     response.headers["Content-Type"] = "text/csv"
     return response
 
+
+# =============================== EJECUCIÓN ================================
 @app.route('/productos')
 def listar_productos():
     return redirect(url_for('productos_listar'))
 
-# =============================== EJECUCIÓN ================================
+
 if __name__ == '__main__':
     app.run(debug=True, port=8000)
